@@ -22,7 +22,7 @@ var CriteriaProcessor = module.exports = function CriteriaProcessor(currentTable
   this.currentSchema = schema[currentTable].attributes;
   this.queryString = '';
   this.values = [];
-  this.paramCount = 0;
+  this.paramCount = 1;
 
   return this;
 };
@@ -49,6 +49,9 @@ CriteriaProcessor.prototype.read = function read(options) {
   _.keys(_options).forEach(function(key) {
     self.expand(key, _options[key]);
   });
+
+  // Remove trailing 'AND'
+  this.queryString = this.queryString.slice(0, -6);
 
   if(options.groupBy) this.groupBy(options.groupBy);
   if(options.sort) this.sort(options.sort);

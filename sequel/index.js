@@ -43,10 +43,16 @@ Sequel.prototype.buildQuery = function buildQuery(currentTable, queryObject) {
   // SKIP, LIMIT or SORT on the populate, then build up a simple WHERE clause if needed.
   // Otherwise pass the whole criteria object into the where module so it can build joins.
   var whereObject;
+  var childQueries;
   var query;
   var values;
 
   if(selectObject.complex) {
+
+    /**
+     * Step 1 - Build out the parent query
+     */
+
     var tmpCriteria = _.cloneDeep(queryObject);
     delete tmpCriteria.instructions;
     whereObject = this.simpleWhere(currentTable, tmpCriteria);
@@ -57,6 +63,14 @@ Sequel.prototype.buildQuery = function buildQuery(currentTable, queryObject) {
 
     query += whereObject.query;
     values = whereObject.values;
+
+    /**
+     * Step 2 - Build out the child query templates.
+     */
+
+    childQueries = this.complexWhere(currentTable, queryObject);
+    this.queries = this.queries.concat(childQueries);
+
   }
 
 
@@ -83,4 +97,9 @@ Sequel.prototype.select = function select(currentTable, queryObject) {
 Sequel.prototype.simpleWhere = function simpleWhere(currentTable, queryObject) {
   var where = new WhereBuilder(this.schema, currentTable);
   return where.single(queryObject);
+};
+
+Sequel.prototype.complexWhere = function complexWhere(currentTable, queryObject) {
+  var where = new WhereBuilder(this.schema, currentTable);
+  return where.complex(queryObject);
 };

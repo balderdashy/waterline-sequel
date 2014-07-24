@@ -49,7 +49,7 @@ SelectBuilder.prototype.check = function check(queryObject) {
 
   // Look through each instruction and determine if the criteria has a skip, sort or limit clause.
   _.keys(queryObject.instructions).forEach(function(alias) {
-    queryObject.instructions[alias].forEach(function(join) {
+    queryObject.instructions[alias].instructions.forEach(function(join) {
       if(!join.criteria) return;
       if(hop(join.criteria, 'skip')) unionNeeded = true;
       if(hop(join.criteria, 'sort')) unionNeeded = true;

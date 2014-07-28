@@ -60,14 +60,36 @@ var WhereBuilder = module.exports = function WhereBuilder(schema, currentTable) 
 
 WhereBuilder.prototype.single = function single(queryObject) {
 
-  var self = this;
-
-  // Build up a WHERE queryString
-  this.queryString = 'WHERE ';
-
   if(!queryObject) return '';
 
-  this.criteriaParser = new CriteriaParser(this.currentTable, this.schema);
+  var self = this;
+  var queryString = '';
+  var addSpace = false;
+
+  // Add any hasFK strategy joins to the main query
+  _.keys(queryObject.instructions).forEach(function(attr) {
+
+    var strategy = queryObject.instructions[attr].strategy.strategy;
+    var population = queryObject.instructions[attr].instructions[0];
+
+    // Handle hasFK
+    if(strategy === 1) {
+
+      // Set outer join logic
+      queryString += 'LEFT OUTER JOIN ' + utils.escapeName(population.child) + ' ON ';
+      queryString += utils.escapeName(population.parent) + '.' + utils.escapeName(population.parentKey);
+      queryString += ' = ' + utils.escapeName(population.child) + '.' + utils.escapeName(population.childKey);
+
+      addSpace = true;
+    }
+  });
+
+  if(addSpace) {
+    queryString += ' ';
+  }
+
+  var tmpCriteria = _.cloneDeep(queryObject);
+  delete tmpCriteria.instructions;
 
   // Ensure a sort is always set so that we get back consistent results
   if(!hop(queryObject, 'sort')) {
@@ -83,22 +105,30 @@ WhereBuilder.prototype.single = function single(queryObject) {
   }
 
   // Read the queryObject and get back a query string and params
-  var parsedCriteria = this.criteriaParser.read(queryObject);
-  this.queryString += parsedCriteria.query;
+  // Use the tmpCriteria here because all the joins have been removed
+  var parsedCriteria = {};
+  if(tmpCriteria.where) {
+    // Build up a WHERE queryString
+    queryString += 'WHERE ';
+
+    this.criteriaParser = new CriteriaParser(this.currentTable, this.schema);
+    parsedCriteria = this.criteriaParser.read(tmpCriteria);
+    queryString += parsedCriteria.query;
+  }
 
   // Remove trailing AND if it exists
-  if(this.queryString.slice(-4) === 'AND ') {
-    this.queryString = this.queryString.slice(0, -5);
+  if(queryString.slice(-4) === 'AND ') {
+    queryString = queryString.slice(0, -5);
   }
 
   // Remove trailing OR if it exists
-  if(this.queryString.slice(-3) === 'OR ') {
-    this.queryString = this.queryString.slice(0, -4);
+  if(queryString.slice(-3) === 'OR ') {
+    queryString = queryString.slice(0, -4);
   }
 
   return {
-    query: this.queryString,
-    values: parsedCriteria.values
+    query: queryString,
+    values: parsedCriteria.values || []
   };
 };
 
@@ -124,13 +154,8 @@ WhereBuilder.prototype.complex = function complex(queryObject) {
     var strategy = queryObject.instructions[attr].strategy.strategy;
     var population = queryObject.instructions[attr].instructions[0];
 
-    // Handle hasFK
-    if(strategy === 1) {
-
-    }
-
     // Handle viaFK
-    else if(strategy === 2) {
+    if(strategy === 2) {
 
       // Build the WHERE part of the query string
       criteriaParser = new CriteriaParser(population.child, self.schema);
@@ -153,7 +178,13 @@ WhereBuilder.prototype.complex = function complex(queryObject) {
 
       queryString = '(SELECT * FROM ' + utils.escapeName(population.child) + ' WHERE ' + utils.escapeName(population.childKey) + ' = ^?^ ';
       if(parsedCriteria) {
-        queryString += 'AND ' + parsedCriteria.query;
+
+        // If where criteria was used append an AND clause
+        if(population.criteria.where && _.keys(population.criteria.where).length > 0) {
+          queryString += 'AND ';
+        }
+
+        queryString += parsedCriteria.query;
       }
 
       queryString += ')';

@@ -51,7 +51,7 @@ CriteriaProcessor.prototype.read = function read(options) {
   });
 
   // Remove trailing 'AND'
-  this.queryString = this.queryString.slice(0, -6);
+  this.queryString = this.queryString.slice(0, -4);
 
   if(options.groupBy) this.groupBy(options.groupBy);
   if(options.sort) this.sort(options.sort);

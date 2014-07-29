@@ -60,7 +60,7 @@ SelectBuilder.prototype.buildSimpleSelect = function buildSimpleSelect(queryObje
     var population = queryObject.instructions[attr].instructions[0];
 
     // Handle hasFK
-    Object.keys(self.schema[population.child].attributes).forEach(function(key) {
+    _.keys(self.schema[population.child].attributes).forEach(function(key) {
       var schema = self.schema[population.child].attributes[key];
       if(hop(schema, 'collection')) return;
       selectKeys.push({ table: population.child, key: key, alias: population.alias });

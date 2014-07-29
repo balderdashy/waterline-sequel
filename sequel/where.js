@@ -107,14 +107,15 @@ WhereBuilder.prototype.single = function single(queryObject) {
   // Read the queryObject and get back a query string and params
   // Use the tmpCriteria here because all the joins have been removed
   var parsedCriteria = {};
-  if(tmpCriteria.where) {
-    // Build up a WHERE queryString
-    queryString += 'WHERE ';
 
-    this.criteriaParser = new CriteriaParser(this.currentTable, this.schema);
-    parsedCriteria = this.criteriaParser.read(tmpCriteria);
-    queryString += parsedCriteria.query;
+  // Build up a WHERE queryString
+  if(tmpCriteria.where) {
+    queryString += 'WHERE ';
   }
+
+  this.criteriaParser = new CriteriaParser(this.currentTable, this.schema);
+  parsedCriteria = this.criteriaParser.read(tmpCriteria);
+  queryString += parsedCriteria.query;
 
   // Remove trailing AND if it exists
   if(queryString.slice(-4) === 'AND ') {
@@ -126,9 +127,17 @@ WhereBuilder.prototype.single = function single(queryObject) {
     queryString = queryString.slice(0, -4);
   }
 
+  var values;
+  if(parsedCriteria && _.isArray(parsedCriteria.values)) {
+    values = parsedCriteria.values;
+  }
+  else {
+    values = [];
+  }
+
   return {
     query: queryString,
-    values: parsedCriteria.values || []
+    values: values
   };
 };
 
@@ -150,19 +159,20 @@ WhereBuilder.prototype.complex = function complex(queryObject) {
     var queryString = '';
     var criteriaParser;
     var parsedCriteria;
+    var childPK;
 
     var strategy = queryObject.instructions[attr].strategy.strategy;
-    var population = queryObject.instructions[attr].instructions[0];
 
     // Handle viaFK
     if(strategy === 2) {
+
+      var population = queryObject.instructions[attr].instructions[0];
 
       // Build the WHERE part of the query string
       criteriaParser = new CriteriaParser(population.child, self.schema);
 
       // Ensure a sort is always set so that we get back consistent results
       if(!hop(population.criteria, 'sort')) {
-        var childPK;
 
         _.keys(self.schema[population.child].attributes).forEach(function(attr) {
           if(!hop(self.schema[population.child].attributes[attr], 'primaryKey')) return;
@@ -201,6 +211,71 @@ WhereBuilder.prototype.complex = function complex(queryObject) {
     // Handle viaJunctor
     else if(strategy === 3) {
 
+      var stage1 = queryObject.instructions[attr].instructions[0];
+      var stage2 = queryObject.instructions[attr].instructions[1];
+
+      // Build the WHERE part of the query string
+      criteriaParser = new CriteriaParser(stage2.child, self.schema);
+
+      // Ensure a sort is always set so that we get back consistent results
+      if(!hop(stage2.criteria, 'sort')) {
+
+        _.keys(self.schema[stage2.child].attributes).forEach(function(attr) {
+          if(!hop(self.schema[stage2.child].attributes[attr], 'primaryKey')) return;
+          childPK = attr;
+        });
+
+        stage2.criteria.sort = {};
+        stage2.criteria.sort[childPK] = 1;
+      }
+
+      // Read the queryObject and get back a query string and params
+      parsedCriteria = criteriaParser.read(stage2.criteria);
+
+      // Look into the schema and build up attributes to select
+      var selectKeys = [];
+
+      _.keys(self.schema[stage2.child].attributes).forEach(function(key) {
+        var schema = self.schema[stage2.child].attributes[key];
+        if(hop(schema, 'collection')) return;
+        selectKeys.push({ table: stage2.child, key: key });
+      });
+
+      queryString += '(SELECT ';
+      selectKeys.forEach(function(projection) {
+        queryString += utils.escapeName(projection.table) + '.' + utils.escapeName(projection.key) + ',';
+      });
+
+      // Add an inner join to give us a key to select from
+      queryString += utils.escapeName(stage1.child) + '.' + utils.escapeName(stage1.childKey) + ' AS "___' + stage1.childKey + '"';
+
+      queryString += ' FROM ' + utils.escapeName(stage2.child);
+      queryString += ' INNER JOIN ' + utils.escapeName(stage1.child) + ' ON ' + utils.escapeName(stage2.parent);
+      queryString += '.' + utils.escapeName(stage2.parentKey) + ' = ' + utils.escapeName(stage2.child) + '.' + utils.escapeName(stage2.childKey);
+      queryString += ' WHERE ' + utils.escapeName(stage2.child) + '.' + utils.escapeName(stage2.childKey) + ' IN ';
+      queryString += '(SELECT ' + utils.escapeName(stage1.child) + '.' + utils.escapeName(stage2.parentKey) + ' FROM ';
+      queryString += utils.escapeName(stage1.child) + ' WHERE ' + utils.escapeName(stage1.child) + '.' + utils.escapeName(stage1.childKey);
+      queryString +=  ' = ^?^ ) ';
+
+      if(parsedCriteria) {
+
+        // If where criteria was used append an AND clause
+        if(stage2.criteria.where && _.keys(stage2.criteria.where).length > 0) {
+          queryString += 'AND ';
+        }
+
+        queryString += parsedCriteria.query;
+      }
+
+      queryString += ')';
+
+      // Add to the query list
+      queries.push({
+        qs: queryString,
+        instructions: queryObject.instructions[attr].instructions,
+        attrName: attr,
+        values: parsedCriteria.values
+      });
     }
   });
 

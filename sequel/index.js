@@ -6,6 +6,7 @@ var _ = require('lodash');
 
 var SelectBuilder = require('./select');
 var WhereBuilder = require('./where');
+var utils = require('./lib/utils');
 
 
 /**
@@ -28,10 +29,10 @@ var Sequel = module.exports = function(schema, options) {
 };
 
 /**
- * Build a SQL Query using the defined schema.
+ * Build a SQL Find Query using the defined schema.
  */
 
-Sequel.prototype.buildQuery = function buildQuery(currentTable, queryObject) {
+Sequel.prototype.find = function find(currentTable, queryObject) {
 
   // Step 1:
   // Build out the Select statements
@@ -68,6 +69,22 @@ Sequel.prototype.buildQuery = function buildQuery(currentTable, queryObject) {
 
 
 /**
+ * Build a SQL Create Query.
+ *
+ */
+
+Sequel.prototype.create = function create(currentTable, data) {
+
+  // Transform the Data object into arrays used in a parameterized query
+  var attributes = utils.mapAttributes(data);
+  var columnNames = attributes.keys.join(', ');
+  var paramValues = attributes.params.join(', ');
+
+  // Build Query
+  var query = 'INSERT INTO ' + utils.escapeName(currentTable) + ' (' + columnNames + ') values (' + paramValues + ') RETURNING *';
+
+  return { query: query, values: attributes.values };
+};
  * Build the select statements for a query.
  */
 

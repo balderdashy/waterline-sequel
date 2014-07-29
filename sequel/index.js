@@ -85,6 +85,78 @@ Sequel.prototype.create = function create(currentTable, data) {
 
   return { query: query, values: attributes.values };
 };
+
+/**
+ * Build a SQL Update Query.
+ *
+ */
+
+Sequel.prototype.update = function update(currentTable, queryObject, data) {
+
+  var query = 'UPDATE ' + utils.escapeName(currentTable) + ' ';
+
+  // Transform the Data object into arrays used in a parameterized query
+  var attributes = utils.mapAttributes(data);
+
+  // Update the paramCount
+  var paramCount = attributes.params.length + 1;
+
+  // Build SET string
+  var str = '';
+  for(var i=0; i < attributes.keys.length; i++) {
+    str += attributes.keys[i] + ' = ' + attributes.params[i] + ', ';
+  }
+
+  // Remove trailing comma
+  str = str.slice(0, -2);
+
+  query += 'SET ' + str + ' ';
+
+  // Add data values to this._values
+  var values = attributes.values;
+
+  // Build Criteria clause
+  var whereObject = this.simpleWhere(currentTable, queryObject, { paramCount: paramCount });
+
+  query += ' ' + whereObject.query;
+  values = values.concat(whereObject.values);
+
+  // Add RETURNING clause
+  query += ' RETURNING *';
+
+  return {
+    query: query,
+    values: values
+  };
+};
+
+
+/**
+ * Build Delete SQL query.
+ *
+ */
+
+Sequel.prototype.destroy = function destroy(currentTable, queryObject) {
+
+  var query = 'DELETE FROM ' + utils.escapeName(currentTable) + ' ';
+
+  // Build Criteria clause
+  var whereObject = this.simpleWhere(currentTable, queryObject);
+
+  query += ' ' + whereObject.query;
+  var values = whereObject.values;
+
+  // Add RETURNING clause
+  query += ' RETURNING *';
+
+  return {
+    query: query,
+    values: values
+  };
+};
+
+
+/**
  * Build the select statements for a query.
  */
 
@@ -96,12 +168,12 @@ Sequel.prototype.select = function select(currentTable, queryObject) {
  * Build the where statements for a query.
  */
 
-Sequel.prototype.simpleWhere = function simpleWhere(currentTable, queryObject) {
+Sequel.prototype.simpleWhere = function simpleWhere(currentTable, queryObject, options) {
   var where = new WhereBuilder(this.schema, currentTable);
-  return where.single(queryObject);
+  return where.single(queryObject, options);
 };
 
-Sequel.prototype.complexWhere = function complexWhere(currentTable, queryObject) {
+Sequel.prototype.complexWhere = function complexWhere(currentTable, queryObject, options) {
   var where = new WhereBuilder(this.schema, currentTable);
-  return where.complex(queryObject);
+  return where.complex(queryObject, options);
 };

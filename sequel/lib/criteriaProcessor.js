@@ -11,7 +11,7 @@ var utils = require('./utils');
  * Processes a query criteria object
  */
 
-var CriteriaProcessor = module.exports = function CriteriaProcessor(currentTable, schema) {
+var CriteriaProcessor = module.exports = function CriteriaProcessor(currentTable, schema, options) {
 
   if(!currentTable || !schema) {
     throw new Error('Incorrect usage of CriteriaProcessor. Must include the currentTable and schema arguments.');
@@ -23,6 +23,10 @@ var CriteriaProcessor = module.exports = function CriteriaProcessor(currentTable
   this.queryString = '';
   this.values = [];
   this.paramCount = 1;
+
+  if(options && utils.object.hasOwnProperty(options, 'paramCount')) {
+    this.paramCount = options.paramCount;
+  }
 
   return this;
 };

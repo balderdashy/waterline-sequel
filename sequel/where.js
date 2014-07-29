@@ -58,7 +58,7 @@ var WhereBuilder = module.exports = function WhereBuilder(schema, currentTable) 
  * Build a Simple Where clause
  */
 
-WhereBuilder.prototype.single = function single(queryObject) {
+WhereBuilder.prototype.single = function single(queryObject, options) {
 
   if(!queryObject) return '';
 
@@ -113,7 +113,7 @@ WhereBuilder.prototype.single = function single(queryObject) {
     queryString += 'WHERE ';
   }
 
-  this.criteriaParser = new CriteriaParser(this.currentTable, this.schema);
+  this.criteriaParser = new CriteriaParser(this.currentTable, this.schema, options);
   parsedCriteria = this.criteriaParser.read(tmpCriteria);
   queryString += parsedCriteria.query;
 
@@ -146,7 +146,7 @@ WhereBuilder.prototype.single = function single(queryObject) {
  * SKIP, SORT and LIMIT.
  */
 
-WhereBuilder.prototype.complex = function complex(queryObject) {
+WhereBuilder.prototype.complex = function complex(queryObject, options) {
 
   var self = this;
   var queries = [];
@@ -169,7 +169,7 @@ WhereBuilder.prototype.complex = function complex(queryObject) {
       var population = queryObject.instructions[attr].instructions[0];
 
       // Build the WHERE part of the query string
-      criteriaParser = new CriteriaParser(population.child, self.schema);
+      criteriaParser = new CriteriaParser(population.child, self.schema, options);
 
       // Ensure a sort is always set so that we get back consistent results
       if(!hop(population.criteria, 'sort')) {
@@ -215,7 +215,7 @@ WhereBuilder.prototype.complex = function complex(queryObject) {
       var stage2 = queryObject.instructions[attr].instructions[1];
 
       // Build the WHERE part of the query string
-      criteriaParser = new CriteriaParser(stage2.child, self.schema);
+      criteriaParser = new CriteriaParser(stage2.child, self.schema, options);
 
       // Ensure a sort is always set so that we get back consistent results
       if(!hop(stage2.criteria, 'sort')) {

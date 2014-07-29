@@ -43,17 +43,26 @@ CriteriaProcessor.prototype.read = function read(options) {
     _options = options.where;
   }
   else {
-    _options = options;
+    _options = _.cloneDeep(options);
   }
 
-  _.keys(_options).forEach(function(key) {
-    self.expand(key, _options[key]);
-  });
+  // Remove SUM, AVERAGE, MAX, MIN
+  delete _options.sum;
+  delete _options.average;
+  delete _options.max;
+  delete _options.min;
+  delete _options.groupBy;
+
+  if(_options.where !== null) {
+    _.keys(_options).forEach(function(key) {
+      self.expand(key, _options[key]);
+    });
+  }
 
   // Remove trailing 'AND'
   this.queryString = this.queryString.slice(0, -4);
 
-  if(options.groupBy) this.groupBy(options.groupBy);
+  if(options.groupBy) this.group(options.groupBy);
   if(options.sort) this.sort(options.sort);
   if(utils.object.hasOwnProperty(options, 'limit')) this.limit(options.limit);
   if(utils.object.hasOwnProperty(options, 'skip')) this.skip(options.skip);
@@ -124,7 +133,9 @@ CriteriaProcessor.prototype.or = function or(val) {
     self.queryString += '(';
 
     // Recursively call expand. Assumes no nesting of `or` statements
-    self.expand('', statement);
+    _.keys(statement).forEach(function(key) {
+      self.expand(key, statement[key]);
+    });
 
     if(self.queryString.slice(-4) === 'AND ') {
       self.queryString = self.queryString.slice(0, -5);
@@ -135,7 +146,7 @@ CriteriaProcessor.prototype.or = function or(val) {
 
   // Remove trailing OR if it exists
   if(self.queryString.slice(-3) === 'OR ') {
-    self.queryString = self.queryStringy.slice(0, -4);
+    self.queryString = self.queryString.slice(0, -4);
   }
 
   self.queryString += ') AND ';
@@ -150,10 +161,6 @@ CriteriaProcessor.prototype.like = function like(val) {
 
   var self = this;
 
-  _.keys(val).forEach(function(parent) {
-    self.queryString += expandBlock(parent);
-  });
-
   var expandBlock = function(parent) {
     var caseSensitive = true;
 
@@ -165,6 +172,11 @@ CriteriaProcessor.prototype.like = function like(val) {
     self.process(parent, val[parent], 'ILIKE', caseSensitive);
     self.queryString += ' AND ';
   };
+
+  _.keys(val).forEach(function(parent) {
+    expandBlock(parent);
+  });
+
 };
 
 
@@ -177,7 +189,7 @@ CriteriaProcessor.prototype.and = function and(key, val) {
   var caseSensitive = true;
 
   // Check if key is a string
-  if(this.currentSchema[key] && this.currentSchema[key].type === 'text') {
+  if(this.currentSchema[key] && this.currentSchema[key] === 'string') {
     caseSensitive = false;
   }
 
@@ -211,7 +223,7 @@ CriteriaProcessor.prototype._in = function _in(key, val) {
   }
 
   // Append each value to query
-  options.forEach(function(value) {
+  val.forEach(function(value) {
     self.queryString += '$' + self.paramCount + ', ';
     self.paramCount++;
 

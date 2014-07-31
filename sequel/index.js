@@ -27,12 +27,21 @@ var Sequel = module.exports = function(schema, options) {
   // Default is true.
   this.parameterized = options && utils.object.hasOwnProperty(options, 'parameterized') ? options.parameterized : true;
 
+  // Flag if things should be cast, useful for averages
+  this.cast = options && utils.object.hasOwnProperty(options, 'casting') ? options.casting : false;
+
   // Flag whether the database is case-sensitive or not.
   // Default is true.
   this.caseSensitive = options && utils.object.hasOwnProperty(options, 'caseSensitive') ? options.caseSensitive : true;
 
   // Set the escape character, default is "
   this.escapeCharacter = options && utils.object.hasOwnProperty(options, 'escapeCharacter') ? options.escapeCharacter : '"';
+
+  // Set if the database can return values from things such as an insert
+  this.canReturnValues = options && utils.object.hasOwnProperty(options, 'canReturnValues') ? options.canReturnValues : false;
+
+  // Determine if insert values should be escaped or not
+  this.escapeInserts = options && utils.object.hasOwnProperty(options, 'escapeInserts') ? options.escapeInserts : false;
 
   this.values = [];
 
@@ -88,7 +97,8 @@ Sequel.prototype.create = function create(currentTable, data) {
 
   var options = {
     parameterized: this.parameterized,
-    escapeCharacter: this.escapeCharacter
+    escapeCharacter: this.escapeCharacter,
+    escapeInserts: this.escapeInserts
   };
 
   // Transform the Data object into arrays used in a parameterized query
@@ -98,6 +108,10 @@ Sequel.prototype.create = function create(currentTable, data) {
 
   // Build Query
   var query = 'INSERT INTO ' + utils.escapeName(currentTable, this.escapeCharacter) + ' (' + columnNames + ') values (' + paramValues + ')';
+
+  if(this.canReturnValues) {
+    query += ' RETURNING *';
+  }
 
   return { query: query, values: attributes.values };
 };
@@ -111,7 +125,8 @@ Sequel.prototype.update = function update(currentTable, queryObject, data) {
 
   var options = {
     parameterized: this.parameterized,
-    escapeCharacter: this.escapeCharacter
+    escapeCharacter: this.escapeCharacter,
+    escapeInserts: this.escapeInserts
   };
 
   var query = 'UPDATE ' + utils.escapeName(currentTable, this.escapeCharacter) + ' ';
@@ -142,6 +157,10 @@ Sequel.prototype.update = function update(currentTable, queryObject, data) {
   query += ' ' + whereObject.query;
   values = values.concat(whereObject.values);
 
+  if(this.canReturnValues) {
+    query += ' RETURNING *';
+  }
+
   return {
     query: query,
     values: values
@@ -164,6 +183,10 @@ Sequel.prototype.destroy = function destroy(currentTable, queryObject) {
   query += ' ' + whereObject.query;
   var values = whereObject.values;
 
+  if(this.canReturnValues) {
+    query += ' RETURNING *';
+  }
+
   return {
     query: query,
     values: values
@@ -177,7 +200,8 @@ Sequel.prototype.destroy = function destroy(currentTable, queryObject) {
 
 Sequel.prototype.select = function select(currentTable, queryObject) {
   var options = {
-    escapeCharacter: this.escapeCharacter
+    escapeCharacter: this.escapeCharacter,
+    cast: this.cast
   };
 
   return new SelectBuilder(this.schema, currentTable, queryObject, options);

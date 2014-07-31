@@ -59,8 +59,12 @@ utils.mapAttributes = function(data, options) {
   // Get the escape character
   var escapeCharacter = options && utils.object.hasOwnProperty(options, 'escapeCharacter') ? options.escapeCharacter : '"';
 
+  // Determine if we should escape the inserted characters
+  var escapeInserts = options && utils.object.hasOwnProperty(options, 'escapeInserts') ? options.escapeInserts : false;
+
   Object.keys(data).forEach(function(key) {
-    keys.push(key);//escapeCharacter + key + escapeCharacter);
+    var k = escapeInserts ? '"' + key + '"' : key;
+    keys.push(k);
 
     var value = utils.prepareValue(data[key]);
 

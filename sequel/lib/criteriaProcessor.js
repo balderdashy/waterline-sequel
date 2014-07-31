@@ -244,8 +244,8 @@ CriteriaProcessor.prototype._in = function _in(key, val) {
   }
 
   // Override caseSensitivity for databases that don't support it
-  if(!this.caseSensitive) {
-    caseSensitivity = true;
+  if(this.caseSensitive) {
+    caseSensitivity = false;
   }
 
   // Check case sensitivity to decide if LOWER logic is used
@@ -266,7 +266,7 @@ CriteriaProcessor.prototype._in = function _in(key, val) {
 
     // Use either a paramterized value or escaped value
     if(self.parameterized) {
-      self.queryString += '$' + self.paramCount + ', ';
+      self.queryString += '$' + self.paramCount + ',';
       self.paramCount++;
     }
     else {
@@ -295,8 +295,8 @@ CriteriaProcessor.prototype.process = function process(parent, value, combinator
   var self = this;
 
   // Override caseSensitivity for databases that don't support it
-  if(!this.caseSensitive) {
-    caseSensitive = true;
+  if(this.caseSensitive) {
+    caseSensitive = false;
   }
 
   // Expand criteria object
@@ -379,6 +379,18 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
   var self = this;
   var str;
   var comparator;
+
+  // Check value for a date type
+  if(_.isDate(value)) {
+    value = value.getFullYear() + '-' +
+      ('00' + (value.getMonth()+1)).slice(-2) + '-' +
+      ('00' + value.getDate()).slice(-2) + ' ' +
+      ('00' + value.getHours()).slice(-2) + ':' +
+      ('00' + value.getMinutes()).slice(-2) + ':' +
+      ('00' + value.getSeconds()).slice(-2);
+
+    value = '"' + value + '"';
+  }
 
   switch(key) {
 
@@ -575,7 +587,7 @@ CriteriaProcessor.prototype.limit = function(options) {
   // Some MySQL hackery here.  For details, see:
   // http://stackoverflow.com/questions/255517/mysql-offset-infinite-rows
   if(options === null || options === undefined) {
-    this.queryString += ' LIMIT 18446744073709551610 ';
+    this.queryString += ' LIMIT 184467440737095516 ';
   }
   else {
     this.queryString += ' LIMIT ' + options;

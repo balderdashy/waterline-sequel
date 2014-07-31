@@ -138,7 +138,7 @@ SelectBuilder.prototype.processAggregates = function processAggregates(criteria)
       criteria.sum.forEach(function(opt) {
         sum = 'SUM(' + tableName + '.' + utils.escapeName(opt, self.escapeCharacter) + ')';
         if(self.cast) {
-          sum = 'CAST(' + sum + ') AS float)';
+          sum = 'CAST(' + sum + ' AS float)';
         }
         query += sum + ' AS ' + opt + ', ';
       });
@@ -146,7 +146,7 @@ SelectBuilder.prototype.processAggregates = function processAggregates(criteria)
     } else {
       sum = 'SUM(' + tableName + '.' + utils.escapeName(criteria.sum, self.escapeCharacter) + ')';
       if(self.cast) {
-        sum = 'CAST(' + sum + ') AS float)';
+        sum = 'CAST(' + sum + ' AS float)';
       }
       query += sum + ' AS ' + criteria.sum + ', ';
     }
@@ -159,14 +159,14 @@ SelectBuilder.prototype.processAggregates = function processAggregates(criteria)
       criteria.average.forEach(function(opt){
         avg = 'AVG(' + tableName + '.' + utils.escapeName(opt, self.escapeCharacter) + ')';
         if(self.cast) {
-          avg = 'CAST( ' + avg + ') AS float)';
+          avg = 'CAST( ' + avg + ' AS float)';
         }
         query +=  avg + ' AS ' + opt + ', ';
       });
     } else {
       avg = 'AVG(' + tableName + '.' + utils.escapeName(criteria.average, self.escapeCharacter) + ')';
       if(self.cast) {
-        avg = 'CAST( ' + avg + ') AS float)';
+        avg = 'CAST( ' + avg + ' AS float)';
       }
       query += avg + ' AS ' + criteria.average + ', ';
     }

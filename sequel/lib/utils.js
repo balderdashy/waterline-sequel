@@ -36,8 +36,8 @@ utils.object.hasOwnProperty = function(obj, prop) {
  * words as table or column names such as user.
  */
 
-utils.escapeName = function escapeName(name) {
-  return '"' + name + '"';
+utils.escapeName = function escapeName(name, escapeCharacter) {
+  return '' + escapeCharacter + name + escapeCharacter;
 };
 
 /**
@@ -47,16 +47,37 @@ utils.escapeName = function escapeName(name) {
  * queries in postgres.
  */
 
-utils.mapAttributes = function(data) {
+utils.mapAttributes = function(data, options) {
   var keys = [],   // Column Names
       values = [], // Column Values
       params = [], // Param Index, ex: $1, $2
       i = 1;
 
+  // Flag whether to use parameterized queries or not
+  var parameterized = options && utils.object.hasOwnProperty(options, 'parameterized') ? options.parameterized : true;
+
+  // Get the escape character
+  var escapeCharacter = options && utils.object.hasOwnProperty(options, 'escapeCharacter') ? options.escapeCharacter : '"';
+
   Object.keys(data).forEach(function(key) {
-    keys.push('"' + key + '"');
-    values.push(utils.prepareValue(data[key]));
-    params.push('$' + i);
+    keys.push(key);//escapeCharacter + key + escapeCharacter);
+
+    var value = utils.prepareValue(data[key]);
+
+    values.push(value);
+
+    if(parameterized) {
+      params.push('$' + i);
+    }
+    else {
+      if(value === null) {
+        params.push('null');
+      }
+      else {
+        params.push(value);
+      }
+    }
+
     i++;
   });
 

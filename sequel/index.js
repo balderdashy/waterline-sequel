@@ -23,6 +23,17 @@ var Sequel = module.exports = function(schema, options) {
   // To solve a query, multiple query strings may be needed.
   this.queries = [];
 
+  // Flag whether queries should be built using parameterized queries or not.
+  // Default is true.
+  this.parameterized = options && utils.object.hasOwnProperty(options, 'parameterized') ? options.parameterized : true;
+
+  // Flag whether the database is case-sensitive or not.
+  // Default is true.
+  this.caseSensitive = options && utils.object.hasOwnProperty(options, 'caseSensitive') ? options.caseSensitive : true;
+
+  // Set the escape character, default is "
+  this.escapeCharacter = options && utils.object.hasOwnProperty(options, 'escapeCharacter') ? options.escapeCharacter : '"';
+
   this.values = [];
 
   return this;
@@ -75,13 +86,18 @@ Sequel.prototype.find = function find(currentTable, queryObject) {
 
 Sequel.prototype.create = function create(currentTable, data) {
 
+  var options = {
+    parameterized: this.parameterized,
+    escapeCharacter: this.escapeCharacter
+  };
+
   // Transform the Data object into arrays used in a parameterized query
-  var attributes = utils.mapAttributes(data);
+  var attributes = utils.mapAttributes(data, options);
   var columnNames = attributes.keys.join(', ');
   var paramValues = attributes.params.join(', ');
 
   // Build Query
-  var query = 'INSERT INTO ' + utils.escapeName(currentTable) + ' (' + columnNames + ') values (' + paramValues + ') RETURNING *';
+  var query = 'INSERT INTO ' + utils.escapeName(currentTable, this.escapeCharacter) + ' (' + columnNames + ') values (' + paramValues + ')';
 
   return { query: query, values: attributes.values };
 };
@@ -93,10 +109,15 @@ Sequel.prototype.create = function create(currentTable, data) {
 
 Sequel.prototype.update = function update(currentTable, queryObject, data) {
 
-  var query = 'UPDATE ' + utils.escapeName(currentTable) + ' ';
+  var options = {
+    parameterized: this.parameterized,
+    escapeCharacter: this.escapeCharacter
+  };
+
+  var query = 'UPDATE ' + utils.escapeName(currentTable, this.escapeCharacter) + ' ';
 
   // Transform the Data object into arrays used in a parameterized query
-  var attributes = utils.mapAttributes(data);
+  var attributes = utils.mapAttributes(data, options);
 
   // Update the paramCount
   var paramCount = attributes.params.length + 1;
@@ -121,9 +142,6 @@ Sequel.prototype.update = function update(currentTable, queryObject, data) {
   query += ' ' + whereObject.query;
   values = values.concat(whereObject.values);
 
-  // Add RETURNING clause
-  query += ' RETURNING *';
-
   return {
     query: query,
     values: values
@@ -138,16 +156,13 @@ Sequel.prototype.update = function update(currentTable, queryObject, data) {
 
 Sequel.prototype.destroy = function destroy(currentTable, queryObject) {
 
-  var query = 'DELETE FROM ' + utils.escapeName(currentTable) + ' ';
+  var query = 'DELETE FROM ' + utils.escapeName(currentTable, this.escapeCharacter) + ' ';
 
   // Build Criteria clause
   var whereObject = this.simpleWhere(currentTable, queryObject);
 
   query += ' ' + whereObject.query;
   var values = whereObject.values;
-
-  // Add RETURNING clause
-  query += ' RETURNING *';
 
   return {
     query: query,
@@ -161,7 +176,11 @@ Sequel.prototype.destroy = function destroy(currentTable, queryObject) {
  */
 
 Sequel.prototype.select = function select(currentTable, queryObject) {
-  return new SelectBuilder(this.schema, currentTable, queryObject);
+  var options = {
+    escapeCharacter: this.escapeCharacter
+  };
+
+  return new SelectBuilder(this.schema, currentTable, queryObject, options);
 };
 
 /**
@@ -169,11 +188,23 @@ Sequel.prototype.select = function select(currentTable, queryObject) {
  */
 
 Sequel.prototype.simpleWhere = function simpleWhere(currentTable, queryObject, options) {
-  var where = new WhereBuilder(this.schema, currentTable);
+  var _options = {
+    parameterized: this.parameterized,
+    caseSensitve: this.caseSensitive,
+    escapeCharacter: this.escapeCharacter
+  };
+
+  var where = new WhereBuilder(this.schema, currentTable, _options);
   return where.single(queryObject, options);
 };
 
 Sequel.prototype.complexWhere = function complexWhere(currentTable, queryObject, options) {
-  var where = new WhereBuilder(this.schema, currentTable);
+  var _options = {
+    parameterized: this.parameterized,
+    caseSensitve: this.caseSensitive,
+    escapeCharacter: this.escapeCharacter
+  };
+
+  var where = new WhereBuilder(this.schema, currentTable, _options);
   return where.complex(queryObject, options);
 };

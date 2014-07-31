@@ -5,6 +5,8 @@
 var _ = require('lodash');
 var utils = require('./utils');
 
+var hop = utils.object.hasOwnProperty;
+
 /**
  * Process Criteria
  *
@@ -23,6 +25,21 @@ var CriteriaProcessor = module.exports = function CriteriaProcessor(currentTable
   this.queryString = '';
   this.values = [];
   this.paramCount = 1;
+  this.parameterized = true;
+  this.caseSensitive = true;
+  this.escapeCharacter = '"';
+
+  if(options && utils.object.hasOwnProperty(options, 'parameterized')) {
+    this.parameterized = options.parameterized;
+  }
+
+  if(options && utils.object.hasOwnProperty(options, 'caseSensitive')) {
+    this.caseSensitive = options.caseSensitive;
+  }
+
+  if(options && utils.object.hasOwnProperty(options, 'escapeCharacter')) {
+    this.escapeCharacter = options.escapeCharacter;
+  }
 
   if(options && utils.object.hasOwnProperty(options, 'paramCount')) {
     this.paramCount = options.paramCount;
@@ -68,8 +85,14 @@ CriteriaProcessor.prototype.read = function read(options) {
 
   if(options.groupBy) this.group(options.groupBy);
   if(options.sort) this.sort(options.sort);
-  if(utils.object.hasOwnProperty(options, 'limit')) this.limit(options.limit);
-  if(utils.object.hasOwnProperty(options, 'skip')) this.skip(options.skip);
+  if(hop(options, 'limit')) this.limit(options.limit);
+
+  // Ensure a limit was used if skip was used
+  if(hop(options, 'skip') && !hop(options, 'limit')) {
+    this.limit(null);
+  }
+
+  if(hop(options, 'skip')) this.skip(options.skip);
 
   return {
     query: this.queryString,
@@ -173,7 +196,9 @@ CriteriaProcessor.prototype.like = function like(val) {
       caseSensitive = false;
     }
 
-    self.process(parent, val[parent], 'ILIKE', caseSensitive);
+    var comparator = this.caseSensitive ? 'ILIKE' : 'LIKE';
+
+    self.process(parent, val[parent], comparator, caseSensitive);
     self.queryString += ' AND ';
   };
 
@@ -218,29 +243,45 @@ CriteriaProcessor.prototype._in = function _in(key, val) {
     caseSensitivity = false;
   }
 
+  // Override caseSensitivity for databases that don't support it
+  if(!this.caseSensitive) {
+    caseSensitivity = true;
+  }
+
   // Check case sensitivity to decide if LOWER logic is used
   if(!caseSensitivity) {
-    key = 'LOWER(' + utils.escapeName(self.currentTable) + '.' + utils.escapeName(key) + ')';
+    key = 'LOWER(' + utils.escapeName(self.currentTable, self.escapeCharacter) + '.' + utils.escapeName(key, self.escapeCharacter) + ')';
     self.queryString += key + ' IN (';
   } else {
-    self.queryString += utils.escapeName(self.currentTable) + '.' + utils.escapeName(key) + ' IN (';
+    self.queryString += utils.escapeName(self.currentTable, self.escapeCharacter) + '.' + utils.escapeName(key, self.escapeCharacter) + ' IN (';
   }
 
   // Append each value to query
   val.forEach(function(value) {
-    self.queryString += '$' + self.paramCount + ', ';
-    self.paramCount++;
 
     // If case sensitivity if off lowercase the value
     if(!caseSensitivity) {
       value = value.toLowerCase();
     }
 
+    // Use either a paramterized value or escaped value
+    if(self.parameterized) {
+      self.queryString += '$' + self.paramCount + ', ';
+      self.paramCount++;
+    }
+    else {
+      if(_.isString(value)) {
+        value = '"' + value + '"';
+      }
+      self.queryString += value + ',';
+    }
+
     self.values.push(value);
   });
 
   // Strip last comma and close criteria
-  self.queryString = self.queryString.slice(0, -2) + ')';
+  self.queryString = self.queryString.slice(0, -1) + ')';
+
   self.queryString += ' AND ';
 };
 
@@ -252,6 +293,11 @@ CriteriaProcessor.prototype._in = function _in(key, val) {
 CriteriaProcessor.prototype.process = function process(parent, value, combinator, caseSensitive) {
 
   var self = this;
+
+  // Override caseSensitivity for databases that don't support it
+  if(!this.caseSensitive) {
+    caseSensitive = true;
+  }
 
   // Expand criteria object
   function expandCriteria(obj) {
@@ -267,10 +313,10 @@ CriteriaProcessor.prototype.process = function process(parent, value, combinator
       // Check if value is a string and if so add LOWER logic
       // to work with case in-sensitive queries
       if(!caseSensitive && _.isString(obj[key])) {
-        _param = 'LOWER(' + utils.escapeName(self.currentTable) + '.' + utils.escapeName(parent) + ')';
+        _param = 'LOWER(' + utils.escapeName(self.currentTable, self.escapeCharacter) + '.' + utils.escapeName(parent, self.escapeCharacter) + ')';
         obj[key] = obj[key].toLowerCase();
       } else {
-        _param = utils.escapeName(self.currentTable) + '.' + utils.escapeName(parent);
+        _param = utils.escapeName(self.currentTable, self.escapeCharacter) + '.' + utils.escapeName(parent, self.escapeCharacter);
       }
 
       self.queryString += _param + ' ';
@@ -296,21 +342,25 @@ CriteriaProcessor.prototype.process = function process(parent, value, combinator
   if(!caseSensitive && typeof value === 'string') {
 
     // ADD LOWER to parent
-    parent = 'LOWER(' + utils.escapeName(self.currentTable) + '.' + utils.escapeName(parent) + ')';
+    parent = 'LOWER(' + utils.escapeName(self.currentTable, self.escapeCharacter) + '.' + utils.escapeName(parent, self.escapeCharacter) + ')';
     value = value.toLowerCase();
 
   } else {
     // Escape parent
-    parent = utils.escapeName(self.currentTable) + '.' + utils.escapeName(parent);
+    parent = utils.escapeName(self.currentTable, self.escapeCharacter) + '.' + utils.escapeName(parent, self.escapeCharacter);
   }
 
   if(value !== null) {
 
     // Simple Key/Value attributes
-    this.queryString += parent + ' ' + combinator + ' $' + this.paramCount;
-
-    this.values.push(value);
-    this.paramCount++;
+    if(self.parameterized) {
+      this.queryString += parent + ' ' + combinator + ' $' + this.paramCount;
+      this.values.push(value);
+      this.paramCount++;
+    }
+    else {
+      this.queryString += parent + ' ' + combinator + ' ' + '"' + value + '"';
+    }
   }
 
   else {
@@ -326,32 +376,62 @@ CriteriaProcessor.prototype.process = function process(parent, value, combinator
 
 CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, value) {
 
+  var self = this;
   var str;
+  var comparator;
 
   switch(key) {
 
     case '<':
     case 'lessThan':
-      this.values.push(value);
-      str = '< ' + '$' + this.paramCount;
+
+      if(this.parameterized) {
+        this.values.push(value);
+        str = '< ' + '$' + this.paramCount;
+      }
+      else {
+        str = '< ' + value;
+      }
+
       break;
 
     case '<=':
     case 'lessThanOrEqual':
-      this.values.push(value);
-      str = '<= ' + '$' + this.paramCount;
+
+      if(this.parameterized) {
+        this.values.push(value);
+        str = '<= ' + '$' + this.paramCount;
+      }
+      else {
+        str = '<= ' + value;
+      }
+
       break;
 
     case '>':
     case 'greaterThan':
-      this.values.push(value);
-      str = '> ' + '$' + this.paramCount;
+
+      if(this.parameterized) {
+        this.values.push(value);
+        str = '> ' + '$' + this.paramCount;
+      }
+      else {
+        str = '> ' + value;
+      }
+
       break;
 
     case '>=':
     case 'greaterThanOrEqual':
-      this.values.push(value);
-      str = '>= ' + '$' + this.paramCount;
+
+      if(this.parameterized) {
+        this.values.push(value);
+        str = '>= ' + '$' + this.paramCount;
+      }
+      else {
+        str = '>= ' + value;
+      }
+
       break;
 
     case '!':
@@ -363,44 +443,120 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
       else {
         // For array values, do a "NOT IN"
         if (Array.isArray(value)) {
-          var self = this;
-          this.values = this.values.concat(value);
-          str = 'NOT IN (';
-          var params = [];
-          value.forEach(function() {
-            params.push('$' + self.paramCount++);
-          });
-          str += params.join(',') + ')';
 
-          // Roll back one since we bump the count at the end
-          this.paramCount--;
+          if(self.parameterized) {
+            var params = [];
+
+            this.values = this.values.concat(value);
+            str = 'NOT IN (';
+
+            value.forEach(function() {
+              params.push('$' + self.paramCount++);
+            });
+
+            str += params.join(',') + ')';
+
+            // Roll back one since we bump the count at the end
+            this.paramCount--;
+          }
+          else {
+            str = 'NOT IN (';
+            value.forEach(function(val) {
+              str += '"' + val + '",';
+            });
+
+            str = str.slice(0, -1) + ')';
+          }
         }
         // Otherwise do a regular <>
         else {
-          this.values.push(value);
-          str = '<> ' + '$' + this.paramCount;
+
+          if(this.parameterized) {
+            this.values.push(value);
+            str = '<> ' + '$' + this.paramCount;
+          }
+          else {
+            str = '<> ' + value;
+          }
         }
       }
+
       break;
 
     case 'like':
-      this.values.push(value);
-      str = 'ILIKE ' + '$' + this.paramCount;
+
+      if(this.caseSensitive) {
+        comparator = 'ILIKE';
+      }
+      else {
+        comparator = 'LIKE';
+      }
+
+      if(this.parameterized) {
+        this.values.push(value);
+        str = comparator + ' ' + '$' + this.paramCount;
+      }
+      else {
+        str = comparator + ' ' + utils.escapeName(value, '"');
+      }
+
       break;
 
     case 'contains':
-      this.values.push('%' + value + '%');
-      str = 'ILIKE ' + '$' + this.paramCount;
+
+      if(this.caseSensitive) {
+        comparator = 'ILIKE';
+      }
+      else {
+        comparator = 'LIKE';
+      }
+
+      if(this.parameterized) {
+        this.values.push('%' + value + '%');
+        str = comparator + ' ' + '$' + this.paramCount;
+      }
+      else {
+        str = comparator + ' ' + utils.escapeName('%' + value + '%', '"');
+      }
+
       break;
 
     case 'startsWith':
-      this.values.push(value + '%');
-      str = 'ILIKE ' + '$' + this.paramCount;
+
+      if(this.caseSensitive) {
+        comparator = 'ILIKE';
+      }
+      else {
+        comparator = 'LIKE';
+      }
+
+      if(this.parameterized) {
+        this.values.push(value + '%');
+        str = comparator + ' ' + '$' + this.paramCount;
+      }
+      else {
+        str = comparator + ' ' + utils.escapeName(value + '%', '"');
+      }
+
       break;
 
     case 'endsWith':
-      this.values.push('%' + value);
-      str = 'ILIKE ' + '$' + this.paramCount;
+
+      if(this.caseSensitive) {
+        comparator = 'ILIKE';
+      }
+      else {
+        comparator = 'LIKE';
+      }
+
+      if(this.parameterized) {
+        this.values.push('%' + value);
+        str = comparator + ' ' + '$' + this.paramCount;
+      }
+      else {
+        str = comparator + ' ' + utils.escapeName('%' + value, '"');
+      }
+
       break;
   }
 
@@ -416,7 +572,14 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
  */
 
 CriteriaProcessor.prototype.limit = function(options) {
-  this.queryString += ' LIMIT ' + options;
+  // Some MySQL hackery here.  For details, see:
+  // http://stackoverflow.com/questions/255517/mysql-offset-infinite-rows
+  if(options === null || options === undefined) {
+    this.queryString += ' LIMIT 18446744073709551610 ';
+  }
+  else {
+    this.queryString += ' LIMIT ' + options;
+  }
 };
 
 /**
@@ -438,7 +601,7 @@ CriteriaProcessor.prototype.sort = function(options) {
 
   Object.keys(options).forEach(function(key) {
     var direction = options[key] === 1 ? 'ASC' : 'DESC';
-    self.queryString += utils.escapeName(self.currentTable) + '.' + utils.escapeName(key) + ' ' + direction + ', ';
+    self.queryString += utils.escapeName(self.currentTable, self.escapeCharacter) + '.' + utils.escapeName(key, self.escapeCharacter) + ' ' + direction + ', ';
   });
 
   // Remove trailing comma
@@ -458,7 +621,7 @@ CriteriaProcessor.prototype.group = function(options) {
   if(!Array.isArray(options)) options = [options];
 
   options.forEach(function(key) {
-    self.queryString += utils.escapeName(self.currentTable) + '.' + utils.escapeName(key) + ', ';
+    self.queryString += utils.escapeName(self.currentTable, self.escapeCharacter) + '.' + utils.escapeName(key, self.escapeCharacter) + ', ';
   });
 
   // Remove trailing comma

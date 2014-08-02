@@ -50,7 +50,7 @@ SelectBuilder.prototype.buildSimpleSelect = function buildSimpleSelect(queryObje
   }
 
   // Escape table name
-  var tableName = utils.escapeName(self.currentTable, self.escapeCharacter);
+  var tableName = utils.escapeName(self.schema[self.currentTable].tableName, self.escapeCharacter);
 
   var selectKeys = [];
   var query = 'SELECT ';
@@ -91,7 +91,7 @@ SelectBuilder.prototype.buildSimpleSelect = function buildSimpleSelect(queryObje
   });
 
   // Remove the last comma
-  query = query.slice(0, -2) + ' FROM ' + tableName + ' ';
+  query = query.slice(0, -2) + ' FROM ' + tableName + ' AS ' + utils.escapeName(self.currentTable, self.escapeCharacter) + ' ';
 
   return query;
 };

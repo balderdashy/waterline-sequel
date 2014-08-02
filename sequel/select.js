@@ -15,7 +15,7 @@ var hop = utils.object.hasOwnProperty;
 var SelectBuilder = module.exports = function(schema, currentTable, queryObject, options) {
 
   this.schema = schema;
-  this.currentTable = currentTable;
+  this.currentTable = _.find(_.values(schema), {tableName: currentTable}).identity;
   this.escapeCharacter = '"';
   this.cast = false;
 

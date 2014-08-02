@@ -88,9 +88,9 @@ WhereBuilder.prototype.single = function single(queryObject, options) {
     if(strategy === 1) {
 
       // Set outer join logic
-      queryString += 'LEFT OUTER JOIN ' + utils.escapeName(population.child, self.escapeCharacter) + ' ON ';
+      queryString += 'LEFT OUTER JOIN ' + population.child + ' AS ' + utils.escapeName('__'+population.alias, self.escapeCharacter) + ' ON ';
       queryString += utils.escapeName(population.parent, self.escapeCharacter) + '.' + utils.escapeName(population.parentKey, self.escapeCharacter);
-      queryString += ' = ' + utils.escapeName(population.child, self.escapeCharacter) + '.' + utils.escapeName(population.childKey, self.escapeCharacter);
+      queryString += ' = ' + utils.escapeName('__'+population.alias, self.escapeCharacter) + '.' + utils.escapeName(population.childKey, self.escapeCharacter);
 
       addSpace = true;
     }

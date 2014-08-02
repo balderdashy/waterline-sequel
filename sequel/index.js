@@ -129,7 +129,10 @@ Sequel.prototype.update = function update(currentTable, queryObject, data) {
     escapeInserts: this.escapeInserts
   };
 
-  var query = 'UPDATE ' + utils.escapeName(currentTable, this.escapeCharacter) + ' ';
+  // Get the attribute identity (as opposed to the table name)
+  var identity = _.find(_.values(this.schema), {tableName: currentTable}).identity;
+  // Create the query with the tablename aliased as the identity (in case they are different)
+  var query = 'UPDATE ' + utils.escapeName(currentTable, this.escapeCharacter) + ' AS ' + utils.escapeName(identity, this.escapeCharacter) + ' ';
 
   // Transform the Data object into arrays used in a parameterized query
   var attributes = utils.mapAttributes(data, options);
@@ -175,7 +178,10 @@ Sequel.prototype.update = function update(currentTable, queryObject, data) {
 
 Sequel.prototype.destroy = function destroy(currentTable, queryObject) {
 
-  var query = 'DELETE FROM ' + utils.escapeName(currentTable, this.escapeCharacter) + ' ';
+  // Get the attribute identity (as opposed to the table name)
+  var identity = _.find(_.values(this.schema), {tableName: currentTable}).identity;
+  // Get the attribute identity (as opposed to the table name)
+  var query = 'DELETE ' + utils.escapeName(identity, this.escapeCharacter) + ' FROM ' + utils.escapeName(currentTable, this.escapeCharacter) + ' AS ' + utils.escapeName(identity, this.escapeCharacter) + ' ';
 
   // Build Criteria clause
   var whereObject = this.simpleWhere(currentTable, queryObject);

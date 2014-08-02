@@ -55,7 +55,10 @@ SelectBuilder.prototype.buildSimpleSelect = function buildSimpleSelect(queryObje
   var selectKeys = [];
   var query = 'SELECT ';
 
-  Object.keys(this.schema[this.currentTable].attributes).forEach(function(key) {
+  var attributes = queryObject.select || Object.keys(this.schema[this.currentTable].attributes);
+  delete queryObject.select;
+
+  attributes.forEach(function(key) {
     var schema = self.schema[self.currentTable].attributes[key];
     if(hop(schema, 'collection')) return;
     selectKeys.push({ table: self.currentTable, key: key });

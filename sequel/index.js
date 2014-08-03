@@ -43,6 +43,11 @@ var Sequel = module.exports = function(schema, options) {
   // Determine if insert values should be escaped or not
   this.escapeInserts = options && utils.object.hasOwnProperty(options, 'escapeInserts') ? options.escapeInserts : false;
 
+  // Determine if aliased tablenames in DELETE queries need to be referenced before the FROM, e.g.
+  // DELETE `tableName` FROM `tableName` as `otherTableName` WHERE `otherTableName`.`foo` = "bar"
+  // MySQL and Oracle require this, but it doesn't work in Postgresql.
+  this.declareDeleteAlias = options && utils.object.hasOwnProperty(options, 'declareDeleteAlias') ? options.declareDeleteAlias : true;
+
   this.values = [];
 
   return this;
@@ -182,8 +187,8 @@ Sequel.prototype.destroy = function destroy(currentTable, queryObject) {
 
   // Get the attribute identity (as opposed to the table name)
   var identity = _.find(_.values(this.schema), {tableName: currentTable}).identity;
-  // Get the attribute identity (as opposed to the table name)
-  var query = 'DELETE ' + utils.escapeName(identity, this.escapeCharacter) + ' FROM ' + utils.escapeName(currentTable, this.escapeCharacter) + ' AS ' + utils.escapeName(identity, this.escapeCharacter) + ' ';
+
+  var query = 'DELETE ' + (this.declareDeleteAlias ? utils.escapeName(identity, this.escapeCharacter) : '') + ' FROM ' + utils.escapeName(currentTable, this.escapeCharacter) + ' AS ' + utils.escapeName(identity, this.escapeCharacter) + ' ';
 
   // Build Criteria clause
   var whereObject = this.simpleWhere(currentTable, queryObject);

@@ -100,8 +100,6 @@ Sequel.prototype.find = function find(currentTable, queryObject) {
 
 Sequel.prototype.create = function create(currentTable, data) {
 
-  var self = this;
-  
   var options = {
     parameterized: this.parameterized,
     escapeCharacter: this.escapeCharacter,
@@ -110,7 +108,7 @@ Sequel.prototype.create = function create(currentTable, data) {
 
   // Transform the Data object into arrays used in a parameterized query
   var attributes = utils.mapAttributes(data, options);
-  var columnNames = attributes.keys.map(function(key){return utils.escapeName(key, self.escapeCharacter);}).join(', ');
+  var columnNames = attributes.keys.join(', ');
   var paramValues = attributes.params.join(', ');
 
   // Build Query

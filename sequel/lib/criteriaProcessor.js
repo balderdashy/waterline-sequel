@@ -359,7 +359,16 @@ CriteriaProcessor.prototype.process = function process(parent, value, combinator
       this.paramCount++;
     }
     else {
-      this.queryString += parent + ' ' + combinator + ' ' + '"' + value + '"';
+      if(_.isDate(value)) {
+        value = value.getFullYear() + '-' +
+          ('00' + (value.getMonth()+1)).slice(-2) + '-' +
+          ('00' + value.getDate()).slice(-2) + ' ' +
+          ('00' + value.getHours()).slice(-2) + ':' +
+          ('00' + value.getMinutes()).slice(-2) + ':' +
+          ('00' + value.getSeconds()).slice(-2);
+      }      
+      if (typeof value === 'string') {value = '"' + value +'"';}
+      this.queryString += parent + ' ' + combinator + ' ' + value;
     }
   }
 

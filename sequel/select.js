@@ -59,9 +59,12 @@ SelectBuilder.prototype.buildSimpleSelect = function buildSimpleSelect(queryObje
   delete queryObject.select;
 
   attributes.forEach(function(key) {
-    var schema = self.schema[self.currentTable].attributes[key];
+    // Default schema to {} in case a raw DB column name is sent.  This shouldn't happen
+    // after https://github.com/balderdashy/waterline/commit/687c869ad54f499018ab0b038d3de4435c96d1dd
+    // but leaving here as a failsafe.
+    var schema = self.schema[self.currentTable].attributes[key] || {};
     if(hop(schema, 'collection')) return;
-    selectKeys.push({ table: self.currentTable, key: key });
+    selectKeys.push({ table: self.currentTable, key: schema.columnName || key });
   });
 
   // Add any hasFK strategy joins to the main query

@@ -84,12 +84,13 @@ WhereBuilder.prototype.single = function single(queryObject, options) {
     var strategy = queryObject.instructions[attr].strategy.strategy;
     var population = queryObject.instructions[attr].instructions[0];
 
+    var parentAttribute = _.find(_.values(self.schema), {tableName: population.parent}).identity;
     // Handle hasFK
     if(strategy === 1) {
 
       // Set outer join logic
-      queryString += 'LEFT OUTER JOIN ' + population.child + ' AS ' + utils.escapeName('__'+population.alias, self.escapeCharacter) + ' ON ';
-      queryString += utils.escapeName(population.parent, self.escapeCharacter) + '.' + utils.escapeName(population.parentKey, self.escapeCharacter);
+      queryString += 'LEFT OUTER JOIN ' + utils.escapeName(population.child, self.escapeCharacter) + ' AS ' + utils.escapeName('__'+population.alias, self.escapeCharacter) + ' ON ';
+      queryString += utils.escapeName(parentAttribute, self.escapeCharacter) + '.' + utils.escapeName(population.parentKey, self.escapeCharacter);
       queryString += ' = ' + utils.escapeName('__'+population.alias, self.escapeCharacter) + '.' + utils.escapeName(population.childKey, self.escapeCharacter);
 
       addSpace = true;
@@ -187,6 +188,7 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
     if(strategy === 2) {
 
       var population = queryObject.instructions[attr].instructions[0];
+      var populationAlias = _.find(_.values(self.schema), {tableName: population.child}).identity;
 
       // Mixin the parameterized flag into options
       _options = _.assign({
@@ -196,13 +198,13 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
       }, options);
 
       // Build the WHERE part of the query string
-      criteriaParser = new CriteriaParser(population.child, self.schema, _options);
+      criteriaParser = new CriteriaParser(populationAlias, self.schema, _options);
 
       // Ensure a sort is always set so that we get back consistent results
       if(!hop(population.criteria, 'sort')) {
 
-        _.keys(self.schema[population.child].attributes).forEach(function(attr) {
-          if(!hop(self.schema[population.child].attributes[attr], 'primaryKey')) return;
+        _.keys(self.schema[populationAlias].attributes).forEach(function(attr) {
+          if(!hop(self.schema[populationAlias].attributes[attr], 'primaryKey')) return;
           childPK = attr;
         });
 
@@ -213,7 +215,7 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
       // Read the queryObject and get back a query string and params
       parsedCriteria = criteriaParser.read(population.criteria);
 
-      queryString = '(SELECT * FROM ' + utils.escapeName(population.child, self.escapeCharacter) + ' WHERE ' + utils.escapeName(population.childKey, self.escapeCharacter) + ' = ^?^ ';
+      queryString = '(SELECT * FROM ' + utils.escapeName(population.child, self.escapeCharacter) + ' AS ' + utils.escapeName(populationAlias, self.escapeCharacter) + ' WHERE ' + utils.escapeName(population.childKey, self.escapeCharacter) + ' = ^?^ ';
       if(parsedCriteria) {
 
         // If where criteria was used append an AND clause
@@ -240,6 +242,8 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
 
       var stage1 = queryObject.instructions[attr].instructions[0];
       var stage2 = queryObject.instructions[attr].instructions[1];
+      stage1ChildAlias = _.find(_.values(self.schema), {tableName: stage1.child}).identity;
+      stage2ChildAlias = _.find(_.values(self.schema), {tableName: stage2.child}).identity;
 
       // Mixin the parameterized flag into options
       _options = _.assign({
@@ -249,13 +253,13 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
       }, options);
 
       // Build the WHERE part of the query string
-      criteriaParser = new CriteriaParser(stage2.child, self.schema, _options);
+      criteriaParser = new CriteriaParser(stage2ChildAlias, self.schema, _options);
 
       // Ensure a sort is always set so that we get back consistent results
       if(!hop(stage2.criteria, 'sort')) {
 
-        _.keys(self.schema[stage2.child].attributes).forEach(function(attr) {
-          if(!hop(self.schema[stage2.child].attributes[attr], 'primaryKey')) return;
+        _.keys(self.schema[stage2ChildAlias].attributes).forEach(function(attr) {
+          if(!hop(self.schema[stage2ChildAlias].attributes[attr], 'primaryKey')) return;
           childPK = attr;
         });
 
@@ -269,24 +273,25 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
       // Look into the schema and build up attributes to select
       var selectKeys = [];
 
-      _.keys(self.schema[stage2.child].attributes).forEach(function(key) {
-        var schema = self.schema[stage2.child].attributes[key];
+      _.keys(self.schema[stage2ChildAlias].attributes).forEach(function(key) {
+        var schema = self.schema[stage2ChildAlias].attributes[key];
         if(hop(schema, 'collection')) return;
         selectKeys.push({ table: stage2.child, key: key });
       });
 
       queryString += '(SELECT ';
       selectKeys.forEach(function(projection) {
-        queryString += utils.escapeName(projection.table, self.escapeCharacter) + '.' + utils.escapeName(projection.key, self.escapeCharacter) + ',';
+        var projectionAlias = _.find(_.values(self.schema), {tableName: projection.table}).identity;
+        queryString += utils.escapeName(projectionAlias, self.escapeCharacter) + '.' + utils.escapeName(projection.key, self.escapeCharacter) + ',';
       });
 
       // Add an inner join to give us a key to select from
       queryString += utils.escapeName(stage1.child, self.escapeCharacter) + '.' + utils.escapeName(stage1.childKey, self.escapeCharacter) + ' AS "___' + stage1.childKey + '"';
 
-      queryString += ' FROM ' + utils.escapeName(stage2.child, self.escapeCharacter);
+      queryString += ' FROM ' + utils.escapeName(stage2.child, self.escapeCharacter) + ' AS ' + utils.escapeName(stage2ChildAlias, self.escapeCharacter) + ' ';
       queryString += ' INNER JOIN ' + utils.escapeName(stage1.child, self.escapeCharacter) + ' ON ' + utils.escapeName(stage2.parent, self.escapeCharacter);
-      queryString += '.' + utils.escapeName(stage2.parentKey, self.escapeCharacter) + ' = ' + utils.escapeName(stage2.child, self.escapeCharacter) + '.' + utils.escapeName(stage2.childKey, self.escapeCharacter);
-      queryString += ' WHERE ' + utils.escapeName(stage2.child, self.escapeCharacter) + '.' + utils.escapeName(stage2.childKey, self.escapeCharacter) + ' IN ';
+      queryString += '.' + utils.escapeName(stage2.parentKey, self.escapeCharacter) + ' = ' + utils.escapeName(stage2ChildAlias, self.escapeCharacter) + '.' + utils.escapeName(stage2.childKey, self.escapeCharacter);
+      queryString += ' WHERE ' + utils.escapeName(stage2ChildAlias, self.escapeCharacter) + '.' + utils.escapeName(stage2.childKey, self.escapeCharacter) + ' IN ';
       queryString += '(SELECT ' + utils.escapeName(stage1.child, self.escapeCharacter) + '.' + utils.escapeName(stage2.parentKey, self.escapeCharacter) + ' FROM ';
       queryString += utils.escapeName(stage1.child, self.escapeCharacter) + ' WHERE ' + utils.escapeName(stage1.child, self.escapeCharacter) + '.' + utils.escapeName(stage1.childKey, self.escapeCharacter);
       queryString +=  ' = ^?^ ) ';

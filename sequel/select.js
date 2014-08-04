@@ -76,8 +76,9 @@ SelectBuilder.prototype.buildSimpleSelect = function buildSimpleSelect(queryObje
     var population = queryObject.instructions[attr].instructions[0];
 
     // Handle hasFK
-    _.keys(self.schema[population.child].attributes).forEach(function(key) {
-      var schema = self.schema[population.child].attributes[key];
+    var childAttribute = _.find(_.values(self.schema), {tableName: population.child}).identity;
+    _.keys(self.schema[childAttribute].attributes).forEach(function(key) {
+      var schema = self.schema[childAttribute].attributes[key];
       if(hop(schema, 'collection')) return;
       selectKeys.push({ table: population.alias ? "__"+population.alias : population.child, key: key, alias: population.alias });
     });
@@ -207,5 +208,6 @@ SelectBuilder.prototype.processAggregates = function processAggregates(criteria)
   query = query.slice(0, -2) + ' ';
 
   // Add FROM clause
-  return query += 'FROM ' + tableName + ' ';
+  query += 'FROM ' + utils.escapeName(self.schema[self.currentTable].tableName, self.escapeCharacter) + ' AS ' + tableName + ' ';
+  return query;
 };

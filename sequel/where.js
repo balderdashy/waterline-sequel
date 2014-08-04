@@ -84,13 +84,13 @@ WhereBuilder.prototype.single = function single(queryObject, options) {
     var strategy = queryObject.instructions[attr].strategy.strategy;
     var population = queryObject.instructions[attr].instructions[0];
 
-    var parentAttribute = _.find(_.values(self.schema), {tableName: population.parent}).identity;
+    var parentAlias = _.find(_.values(self.schema), {tableName: population.parent}).identity;
     // Handle hasFK
     if(strategy === 1) {
 
       // Set outer join logic
       queryString += 'LEFT OUTER JOIN ' + utils.escapeName(population.child, self.escapeCharacter) + ' AS ' + utils.escapeName('__'+population.alias, self.escapeCharacter) + ' ON ';
-      queryString += utils.escapeName(parentAttribute, self.escapeCharacter) + '.' + utils.escapeName(population.parentKey, self.escapeCharacter);
+      queryString += utils.escapeName(parentAlias, self.escapeCharacter) + '.' + utils.escapeName(population.parentKey, self.escapeCharacter);
       queryString += ' = ' + utils.escapeName('__'+population.alias, self.escapeCharacter) + '.' + utils.escapeName(population.childKey, self.escapeCharacter);
 
       addSpace = true;

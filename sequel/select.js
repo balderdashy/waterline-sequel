@@ -76,9 +76,9 @@ SelectBuilder.prototype.buildSimpleSelect = function buildSimpleSelect(queryObje
     var population = queryObject.instructions[attr].instructions[0];
 
     // Handle hasFK
-    var childAttribute = _.find(_.values(self.schema), {tableName: population.child}).identity;
-    _.keys(self.schema[childAttribute].attributes).forEach(function(key) {
-      var schema = self.schema[childAttribute].attributes[key];
+    var childAlias = _.find(_.values(self.schema), {tableName: population.child}).identity;
+    _.keys(self.schema[childAlias].attributes).forEach(function(key) {
+      var schema = self.schema[childAlias].attributes[key];
       if(hop(schema, 'collection')) return;
       selectKeys.push({ table: population.alias ? "__"+population.alias : population.child, key: key, alias: population.alias });
     });

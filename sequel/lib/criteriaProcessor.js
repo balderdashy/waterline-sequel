@@ -366,7 +366,7 @@ CriteriaProcessor.prototype.process = function process(parent, value, combinator
           ('00' + value.getHours()).slice(-2) + ':' +
           ('00' + value.getMinutes()).slice(-2) + ':' +
           ('00' + value.getSeconds()).slice(-2);
-      }      
+      }
       if (typeof value === 'string') {value = '"' + value +'"';}
       this.queryString += parent + ' ' + combinator + ' ' + value;
     }
@@ -483,7 +483,12 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
           else {
             str = 'NOT IN (';
             value.forEach(function(val) {
-              str += '"' + val + '",';
+
+              if(_.isString(val)) {
+                val = '"' + val + '"';
+              }
+
+              str += val + ',';
             });
 
             str = str.slice(0, -1) + ')';
@@ -497,6 +502,10 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
             str = '<> ' + '$' + this.paramCount;
           }
           else {
+            if(_.isString(value)) {
+              value = '"' + value + '"';
+            }
+
             str = '<> ' + value;
           }
         }

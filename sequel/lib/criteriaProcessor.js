@@ -388,6 +388,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
   var self = this;
   var str;
   var comparator;
+  var escapedDate = false;
 
   // Check value for a date type
   if(_.isDate(value)) {
@@ -399,6 +400,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
       ('00' + value.getSeconds()).slice(-2);
 
     value = '"' + value + '"';
+    escapedDate = true;
   }
 
   switch(key) {
@@ -411,7 +413,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
         str = '< ' + '$' + this.paramCount;
       }
       else {
-        if(_.isString(value)) {
+        if(_.isString(value) && !escapedDate) {
           value = '"' + value + '"';
         }
         str = '< ' + value;
@@ -427,7 +429,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
         str = '<= ' + '$' + this.paramCount;
       }
       else {
-        if(_.isString(value)) {
+        if(_.isString(value) && !escapedDate) {
           value = '"' + value + '"';
         }
         str = '<= ' + value;
@@ -443,7 +445,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
         str = '> ' + '$' + this.paramCount;
       }
       else {
-        if(_.isString(value)) {
+        if(_.isString(value) && !escapedDate) {
           value = '"' + value + '"';
         }
         str = '> ' + value;
@@ -459,7 +461,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
         str = '>= ' + '$' + this.paramCount;
       }
       else {
-        if(_.isString(value)) {
+        if(_.isString(value) && !escapedDate) {
           value = '"' + value + '"';
         }
         str = '>= ' + value;

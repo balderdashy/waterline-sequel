@@ -411,6 +411,9 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
         str = '< ' + '$' + this.paramCount;
       }
       else {
+        if(_.isString(value)) {
+          value = '"' + value + '"';
+        }
         str = '< ' + value;
       }
 
@@ -424,6 +427,9 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
         str = '<= ' + '$' + this.paramCount;
       }
       else {
+        if(_.isString(value)) {
+          value = '"' + value + '"';
+        }
         str = '<= ' + value;
       }
 
@@ -437,6 +443,9 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
         str = '> ' + '$' + this.paramCount;
       }
       else {
+        if(_.isString(value)) {
+          value = '"' + value + '"';
+        }
         str = '> ' + value;
       }
 
@@ -450,6 +459,9 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
         str = '>= ' + '$' + this.paramCount;
       }
       else {
+        if(_.isString(value)) {
+          value = '"' + value + '"';
+        }
         str = '>= ' + value;
       }
 

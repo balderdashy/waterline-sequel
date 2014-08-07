@@ -472,8 +472,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
     case '!':
     case 'not':
       if(value === null) {
-        this.query += 'IS NOT NULL';
-        return;
+        str = 'IS NOT NULL';
       }
       else {
         // For array values, do a "NOT IN"

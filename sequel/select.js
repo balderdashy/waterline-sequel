@@ -77,10 +77,11 @@ SelectBuilder.prototype.buildSimpleSelect = function buildSimpleSelect(queryObje
 
     // Handle hasFK
     var childAlias = _.find(_.values(self.schema), {tableName: population.child}).identity;
+
     _.keys(self.schema[childAlias].attributes).forEach(function(key) {
       var schema = self.schema[childAlias].attributes[key];
       if(hop(schema, 'collection')) return;
-      selectKeys.push({ table: population.alias ? "__"+population.alias : population.child, key: schema.columnName || key, alias: population.alias });
+      selectKeys.push({ table: population.alias ? "__"+population.alias : population.child, key: schema.columnName || key, alias: population.parentKey });
     });
   });
 

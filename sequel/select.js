@@ -18,6 +18,7 @@ var SelectBuilder = module.exports = function(schema, currentTable, queryObject,
   this.currentTable = _.find(_.values(schema), {tableName: currentTable}).identity;
   this.escapeCharacter = '"';
   this.cast = false;
+  this.enableQueryLogging = false;
 
   if(options && hop(options, 'escapeCharacter')) {
     this.escapeCharacter = options.escapeCharacter;
@@ -25,6 +26,10 @@ var SelectBuilder = module.exports = function(schema, currentTable, queryObject,
 
   if(options && hop(options, 'cast')) {
     this.cast = options.cast;
+  }
+
+  if(options && hop(options, 'enableQueryLogging')) {
+    this.enableQueryLogging = options.enableQueryLogging;
   }
 
   var queries = [];
@@ -100,6 +105,10 @@ SelectBuilder.prototype.buildSimpleSelect = function buildSimpleSelect(queryObje
 
   // Remove the last comma
   query = query.slice(0, -2) + ' FROM ' + tableName + ' AS ' + utils.escapeName(self.currentTable, self.escapeCharacter) + ' ';
+
+  if (this.enableQueryLogging) {
+     console.log('Query: ', query);
+  }
 
   return query;
 };
@@ -210,5 +219,11 @@ SelectBuilder.prototype.processAggregates = function processAggregates(criteria)
 
   // Add FROM clause
   query += 'FROM ' + utils.escapeName(self.schema[self.currentTable].tableName, self.escapeCharacter) + ' AS ' + tableName + ' ';
+
+  //
+  if (this.enableQueryLogging) {
+    console.log('Query: ', query);
+  }
+
   return query;
 };

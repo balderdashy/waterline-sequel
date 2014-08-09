@@ -120,6 +120,16 @@ utils.prepareValue = function(value) {
   return value;
 };
 
+utils.dumpQuery = function(query, values) {
+    var index=0;
+    var formatArray = values;
+    var actualQuery = query.replace(/(\$[0-9]+)/g, function(key){
+        return formatArray[index++] || "";
+    });
+
+    console.log('Query: %s', actualQuery);
+};
+
 /**
  * JS Date to UTC Timestamp
  *

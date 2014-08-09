@@ -121,10 +121,6 @@ Sequel.prototype.create = function create(currentTable, data) {
     query += ' RETURNING *';
   }
 
-  if (this.enableQueryLogging) {
-    console.log('Query: ', query);
-  }
-
   return { query: query, values: attributes.values };
 };
 
@@ -177,7 +173,7 @@ Sequel.prototype.update = function update(currentTable, queryObject, data) {
   }
 
   if (this.enableQueryLogging) {
-    console.log('Query: ', query);
+      utils.dumpQuery(query, values);
   }
 
   return {
@@ -210,9 +206,8 @@ Sequel.prototype.destroy = function destroy(currentTable, queryObject) {
   }
 
   if (this.enableQueryLogging) {
-    console.log('Query: ', query);
+    utils.dumpQuery(query, values);
   }
-
 
   return {
     query: query,

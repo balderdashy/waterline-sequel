@@ -220,10 +220,5 @@ SelectBuilder.prototype.processAggregates = function processAggregates(criteria)
   // Add FROM clause
   query += 'FROM ' + utils.escapeName(self.schema[self.currentTable].tableName, self.escapeCharacter) + ' AS ' + tableName + ' ';
 
-  //
-  if (this.enableQueryLogging) {
-    console.log('Query: ', query);
-  }
-
   return query;
 };

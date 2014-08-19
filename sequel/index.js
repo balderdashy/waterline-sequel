@@ -212,6 +212,7 @@ Sequel.prototype.destroy = function destroy(currentTable, queryObject) {
 Sequel.prototype.select = function select(currentTable, queryObject) {
   var options = {
     escapeCharacter: this.escapeCharacter,
+    caseSensitive: this.caseSensitive,
     cast: this.cast
   };
 
@@ -225,7 +226,7 @@ Sequel.prototype.select = function select(currentTable, queryObject) {
 Sequel.prototype.simpleWhere = function simpleWhere(currentTable, queryObject, options) {
   var _options = {
     parameterized: this.parameterized,
-    caseSensitve: this.caseSensitive,
+    caseSensitive: this.caseSensitive,
     escapeCharacter: this.escapeCharacter
   };
 
@@ -236,7 +237,7 @@ Sequel.prototype.simpleWhere = function simpleWhere(currentTable, queryObject, o
 Sequel.prototype.complexWhere = function complexWhere(currentTable, queryObject, options) {
   var _options = {
     parameterized: this.parameterized,
-    caseSensitve: this.caseSensitive,
+    caseSensitive: this.caseSensitive,
     escapeCharacter: this.escapeCharacter
   };
 

@@ -276,7 +276,7 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
       _.keys(self.schema[stage2ChildAlias].attributes).forEach(function(key) {
         var schema = self.schema[stage2ChildAlias].attributes[key];
         if(hop(schema, 'collection')) return;
-        selectKeys.push({ table: stage2.child, key: key });
+        selectKeys.push({ table: stage2.child, key: schema.columnName || key });
       });
 
       queryString += '(SELECT ';

@@ -238,9 +238,17 @@ CriteriaProcessor.prototype._in = function _in(key, val) {
   // Set case sensitive by default
   var caseSensitivity = true;
 
+  // Set lower logic to true
+  var lower = true;
+
   // Check if key is a string
   if(self.currentSchema[key] && self.currentSchema[key].type === 'text') {
     caseSensitivity = false;
+  }
+
+  // Check if key is a number or anything that can't be lowercased
+  if(self.currentSchema[key] && self.currentSchema[key].type === 'integer' || self.currentSchema[key].type === 'float') {
+    lower = false;
   }
 
   // Override caseSensitivity for databases that don't support it
@@ -250,7 +258,11 @@ CriteriaProcessor.prototype._in = function _in(key, val) {
 
   // Check case sensitivity to decide if LOWER logic is used
   if(!caseSensitivity) {
-    key = 'LOWER(' + utils.escapeName(self.currentTable, self.escapeCharacter) + '.' + utils.escapeName(key, self.escapeCharacter) + ')';
+    if(lower) {
+      key = 'LOWER(' + utils.escapeName(self.currentTable, self.escapeCharacter) + '.' + utils.escapeName(key, self.escapeCharacter) + ')';
+    } else {
+      key = utils.escapeName(self.currentTable, self.escapeCharacter) + '.' + utils.escapeName(key, self.escapeCharacter);
+    }
     self.queryString += key + ' IN (';
   } else {
     self.queryString += utils.escapeName(self.currentTable, self.escapeCharacter) + '.' + utils.escapeName(key, self.escapeCharacter) + ' IN (';
@@ -260,7 +272,7 @@ CriteriaProcessor.prototype._in = function _in(key, val) {
   val.forEach(function(value) {
 
     // If case sensitivity if off lowercase the value
-    if(!caseSensitivity) {
+    if(!caseSensitivity && _.isString(value)) {
       value = value.toLowerCase();
     }
 

@@ -279,8 +279,9 @@ CriteriaProcessor.prototype._in = function _in(key, val) {
     }
     else {
       if(_.isString(value)) {
-        value = '"' + value + '"';
+        value = '"' + utils.escapeString(value) + '"';
       }
+
       self.queryString += value + ',';
     }
 
@@ -389,7 +390,11 @@ CriteriaProcessor.prototype.process = function process(parent, value, combinator
           ('00' + value.getMinutes()).slice(-2) + ':' +
           ('00' + value.getSeconds()).slice(-2);
       }
-      if (typeof value === 'string') {value = '"' + value +'"';}
+
+      if (_.isString(value)) {
+        value = '"' + utils.escapeString(value) +'"';
+      }
+
       this.queryString += parent + ' ' + combinator + ' ' + value;
     }
   }
@@ -436,7 +441,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
       }
       else {
         if(_.isString(value) && !escapedDate) {
-          value = '"' + value + '"';
+          value = '"' + utils.escapeString(value) + '"';
         }
         str = '< ' + value;
       }
@@ -452,7 +457,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
       }
       else {
         if(_.isString(value) && !escapedDate) {
-          value = '"' + value + '"';
+          value = '"' + utils.escapeString(value) + '"';
         }
         str = '<= ' + value;
       }
@@ -468,7 +473,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
       }
       else {
         if(_.isString(value) && !escapedDate) {
-          value = '"' + value + '"';
+          value = '"' + utils.escapeString(value) + '"';
         }
         str = '> ' + value;
       }
@@ -484,7 +489,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
       }
       else {
         if(_.isString(value) && !escapedDate) {
-          value = '"' + value + '"';
+          value = '"' + utils.escapeString(value) + '"';
         }
         str = '>= ' + value;
       }
@@ -520,7 +525,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
             value.forEach(function(val) {
 
               if(_.isString(val)) {
-                val = '"' + val + '"';
+                val = '"' + utils.escapeString(val) + '"';
               }
 
               str += val + ',';
@@ -538,7 +543,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
           }
           else {
             if(_.isString(value)) {
-              value = '"' + value + '"';
+              value = '"' + utils.escapeString(value) + '"';
             }
 
             str = '<> ' + value;

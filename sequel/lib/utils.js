@@ -121,6 +121,28 @@ utils.prepareValue = function(value) {
 };
 
 /**
+ * Escape Strings
+ */
+
+utils.escapeStrings = function(value) {
+  if(!_.isString(value)) return value;
+
+  value = value.replace(/[\0\n\r\b\t\\\'\"\x1a]/g, function(s) {
+    switch(s) {
+      case "\0": return "\\0";
+      case "\n": return "\\n";
+      case "\r": return "\\r";
+      case "\b": return "\\b";
+      case "\t": return "\\t";
+      case "\x1a": return "\\Z";
+      default: return "\\"+s;
+    }
+  });
+
+  return value;
+};
+
+/**
  * JS Date to UTC Timestamp
  *
  * Dates should be stored in Postgres with UTC timestamps

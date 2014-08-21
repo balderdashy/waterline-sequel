@@ -348,10 +348,18 @@ CriteriaProcessor.prototype.process = function process(parent, value, combinator
 
     return;
   }
+  
+  // Set lower logic to true
+  var lower = true;
+
+  // Check if parent is a number or anything that can't be lowercased
+  if(self.currentSchema[parent] && self.currentSchema[parent].type === 'integer' || self.currentSchema[parent].type === 'float') {
+    lower = false;
+  }
 
   // Check if value is a string and if so add LOWER logic
   // to work with case in-sensitive queries
-  if(!caseSensitive && typeof value === 'string') {
+  if(!caseSensitive && lower && typeof value === 'string') {
 
     // ADD LOWER to parent
     parent = 'LOWER(' + utils.escapeName(self.currentTable, self.escapeCharacter) + '.' + utils.escapeName(parent, self.escapeCharacter) + ')';

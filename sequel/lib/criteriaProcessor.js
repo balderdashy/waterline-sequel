@@ -238,17 +238,13 @@ CriteriaProcessor.prototype._in = function _in(key, val) {
   // Set case sensitive by default
   var caseSensitivity = true;
 
-  // Set lower logic to true
-  var lower = true;
+  // Set lower logic to false
+  var lower = false;
 
   // Check if key is a string
   if(self.currentSchema[key] && self.currentSchema[key].type === 'text') {
     caseSensitivity = false;
-  }
-
-  // Check if key is a number or anything that can't be lowercased
-  if(self.currentSchema[key] && self.currentSchema[key].type === 'integer' || self.currentSchema[key].type === 'float') {
-    lower = false;
+    lower = true;
   }
 
   // Override caseSensitivity for databases that don't support it
@@ -314,6 +310,7 @@ CriteriaProcessor.prototype.process = function process(parent, value, combinator
   // Expand criteria object
   function expandCriteria(obj) {
     var _param;
+    var lower = false;
 
     _.keys(obj).forEach(function(key) {
 
@@ -322,9 +319,14 @@ CriteriaProcessor.prototype.process = function process(parent, value, combinator
         return expandCriteria(obj[key]);
       }
 
+      // Check if key is a string
+      if(self.currentSchema[parent] && self.currentSchema[parent].type === 'text') {
+        lower = true;
+      }
+
       // Check if value is a string and if so add LOWER logic
       // to work with case in-sensitive queries
-      if(!caseSensitive && _.isString(obj[key])) {
+      if(!caseSensitive && _.isString(obj[key]) && lower) {
         _param = 'LOWER(' + utils.escapeName(self.currentTable, self.escapeCharacter) + '.' + utils.escapeName(parent, self.escapeCharacter) + ')';
         obj[key] = obj[key].toLowerCase();
       } else {
@@ -348,18 +350,18 @@ CriteriaProcessor.prototype.process = function process(parent, value, combinator
 
     return;
   }
-  
+
   // Set lower logic to true
-  var lower = true;
+  var lower = false;
 
   // Check if parent is a number or anything that can't be lowercased
-  if(self.currentSchema[parent] && self.currentSchema[parent].type === 'integer' || self.currentSchema[parent].type === 'float') {
-    lower = false;
+  if(self.currentSchema[parent] && self.currentSchema[parent].type === 'text') {
+    lower = true;
   }
 
   // Check if value is a string and if so add LOWER logic
   // to work with case in-sensitive queries
-  if(!caseSensitive && lower && typeof value === 'string') {
+  if(!caseSensitive && lower && _.isString(value)) {
 
     // ADD LOWER to parent
     parent = 'LOWER(' + utils.escapeName(self.currentTable, self.escapeCharacter) + '.' + utils.escapeName(parent, self.escapeCharacter) + ')';

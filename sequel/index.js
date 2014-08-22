@@ -27,7 +27,7 @@ var Sequel = module.exports = function(schema, options) {
   // Default is true.
   this.parameterized = options && utils.object.hasOwnProperty(options, 'parameterized') ? options.parameterized : true;
 
-  // Prefix that should be ised for parameter names.
+  // Prefix that should be used for parameter names.
   // Default is '$'.
   this.parameterPrefix = options && utils.object.hasOwnProperty(options, 'parameterPrefix') ? options.parameterPrefix : '$';
 

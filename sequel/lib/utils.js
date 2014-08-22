@@ -124,7 +124,7 @@ utils.prepareValue = function(value) {
  * Escape Strings
  */
 
-utils.escapeStrings = function(value) {
+utils.escapeString = function(value) {
   if(!_.isString(value)) return value;
 
   value = value.replace(/[\0\n\r\b\t\\\'\"\x1a]/g, function(s) {

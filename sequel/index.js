@@ -27,6 +27,10 @@ var Sequel = module.exports = function(schema, options) {
   // Default is true.
   this.parameterized = options && utils.object.hasOwnProperty(options, 'parameterized') ? options.parameterized : true;
 
+  // Prefix that should be used for parameter names.
+  // Default is '$'.
+  this.parameterPrefix = options && utils.object.hasOwnProperty(options, 'parameterPrefix') ? options.parameterPrefix : '$';
+
   // Flag if things should be cast, useful for averages
   this.cast = options && utils.object.hasOwnProperty(options, 'casting') ? options.casting : false;
 
@@ -102,6 +106,7 @@ Sequel.prototype.create = function create(currentTable, data) {
 
   var options = {
     parameterized: this.parameterized,
+    parameterPrefix: this.parameterPrefix,
     escapeCharacter: this.escapeCharacter,
     escapeInserts: this.escapeInserts
   };
@@ -130,6 +135,7 @@ Sequel.prototype.update = function update(currentTable, queryObject, data) {
 
   var options = {
     parameterized: this.parameterized,
+    parameterPrefix: this.parameterPrefix,
     escapeCharacter: this.escapeCharacter,
     escapeInserts: this.escapeInserts
   };
@@ -226,6 +232,7 @@ Sequel.prototype.select = function select(currentTable, queryObject) {
 Sequel.prototype.simpleWhere = function simpleWhere(currentTable, queryObject, options) {
   var _options = {
     parameterized: this.parameterized,
+    parameterPrefix: this.parameterPrefix,
     caseSensitive: this.caseSensitive,
     escapeCharacter: this.escapeCharacter
   };
@@ -237,6 +244,7 @@ Sequel.prototype.simpleWhere = function simpleWhere(currentTable, queryObject, o
 Sequel.prototype.complexWhere = function complexWhere(currentTable, queryObject, options) {
   var _options = {
     parameterized: this.parameterized,
+    parameterPrefix: this.parameterPrefix,
     caseSensitive: this.caseSensitive,
     escapeCharacter: this.escapeCharacter
   };

@@ -26,11 +26,16 @@ var CriteriaProcessor = module.exports = function CriteriaProcessor(currentTable
   this.values = [];
   this.paramCount = 1;
   this.parameterized = true;
+  this.parameterPrefix = '$';
   this.caseSensitive = true;
   this.escapeCharacter = '"';
 
   if(options && utils.object.hasOwnProperty(options, 'parameterized')) {
     this.parameterized = options.parameterized;
+  }
+
+  if(options && utils.object.hasOwnProperty(options, 'parameterPrefix')) {
+    this.parameterPrefix = options.parameterPrefix;
   }
 
   if(options && utils.object.hasOwnProperty(options, 'caseSensitive')) {
@@ -274,7 +279,7 @@ CriteriaProcessor.prototype._in = function _in(key, val) {
 
     // Use either a paramterized value or escaped value
     if(self.parameterized) {
-      self.queryString += '$' + self.paramCount + ',';
+      self.queryString += self.parameterPrefix + self.paramCount + ',';
       self.paramCount++;
     }
     else {
@@ -377,7 +382,7 @@ CriteriaProcessor.prototype.process = function process(parent, value, combinator
 
     // Simple Key/Value attributes
     if(self.parameterized) {
-      this.queryString += parent + ' ' + combinator + ' $' + this.paramCount;
+      this.queryString += parent + ' ' + combinator + ' ' + self.parameterPrefix + this.paramCount;
       this.values.push(value);
       this.paramCount++;
     }
@@ -437,7 +442,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
 
       if(this.parameterized) {
         this.values.push(value);
-        str = '< ' + '$' + this.paramCount;
+        str = '< ' + self.parameterPrefix + this.paramCount;
       }
       else {
         if(_.isString(value) && !escapedDate) {
@@ -453,7 +458,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
 
       if(this.parameterized) {
         this.values.push(value);
-        str = '<= ' + '$' + this.paramCount;
+        str = '<= ' + self.parameterPrefix + this.paramCount;
       }
       else {
         if(_.isString(value) && !escapedDate) {
@@ -469,7 +474,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
 
       if(this.parameterized) {
         this.values.push(value);
-        str = '> ' + '$' + this.paramCount;
+        str = '> ' + self.parameterPrefix + this.paramCount;
       }
       else {
         if(_.isString(value) && !escapedDate) {
@@ -485,7 +490,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
 
       if(this.parameterized) {
         this.values.push(value);
-        str = '>= ' + '$' + this.paramCount;
+        str = '>= ' + self.parameterPrefix + this.paramCount;
       }
       else {
         if(_.isString(value) && !escapedDate) {
@@ -512,7 +517,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
             str = 'NOT IN (';
 
             value.forEach(function() {
-              params.push('$' + self.paramCount++);
+              params.push(self.parameterPrefix + self.paramCount++);
             });
 
             str += params.join(',') + ')';
@@ -539,7 +544,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
 
           if(this.parameterized) {
             this.values.push(value);
-            str = '<> ' + '$' + this.paramCount;
+            str = '<> ' + self.parameterPrefix + this.paramCount;
           }
           else {
             if(_.isString(value)) {
@@ -564,7 +569,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
 
       if(this.parameterized) {
         this.values.push(value);
-        str = comparator + ' ' + '$' + this.paramCount;
+        str = comparator + ' ' + self.parameterPrefix + this.paramCount;
       }
       else {
         str = comparator + ' ' + utils.escapeName(value, '"');
@@ -583,7 +588,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
 
       if(this.parameterized) {
         this.values.push('%' + value + '%');
-        str = comparator + ' ' + '$' + this.paramCount;
+        str = comparator + ' ' + self.parameterPrefix + this.paramCount;
       }
       else {
         str = comparator + ' ' + utils.escapeName('%' + value + '%', '"');
@@ -602,7 +607,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
 
       if(this.parameterized) {
         this.values.push(value + '%');
-        str = comparator + ' ' + '$' + this.paramCount;
+        str = comparator + ' ' + self.parameterPrefix + this.paramCount;
       }
       else {
         str = comparator + ' ' + utils.escapeName(value + '%', '"');
@@ -621,7 +626,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
 
       if(this.parameterized) {
         this.values.push('%' + value);
-        str = comparator + ' ' + '$' + this.paramCount;
+        str = comparator + ' ' + self.parameterPrefix + this.paramCount;
       }
       else {
         str = comparator + ' ' + utils.escapeName('%' + value, '"');

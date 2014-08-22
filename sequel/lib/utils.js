@@ -56,6 +56,9 @@ utils.mapAttributes = function(data, options) {
   // Flag whether to use parameterized queries or not
   var parameterized = options && utils.object.hasOwnProperty(options, 'parameterized') ? options.parameterized : true;
 
+  // Prefix that should be ised for parameter names.
+  var parameterPrefix = options && utils.object.hasOwnProperty(options, 'parameterPrefix') ? options.parameterPrefix : '$';
+
   // Get the escape character
   var escapeCharacter = options && utils.object.hasOwnProperty(options, 'escapeCharacter') ? options.escapeCharacter : '"';
 
@@ -71,7 +74,7 @@ utils.mapAttributes = function(data, options) {
     values.push(value);
 
     if(parameterized) {
-      params.push('$' + i);
+      params.push(parameterPrefix + i);
     }
     else {
       if(value === null) {

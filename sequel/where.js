@@ -54,6 +54,10 @@ var WhereBuilder = module.exports = function WhereBuilder(schema, currentTable, 
     this.parameterized = options.parameterized;
   }
 
+  if(options && hop(options, 'parameterPrefix')) {
+    this.parameterPrefix = options.parameterPrefix;
+  }
+
   if(options && hop(options, 'caseSensitive')) {
     this.caseSensitive = options.caseSensitive;
   }
@@ -129,6 +133,7 @@ WhereBuilder.prototype.single = function single(queryObject, options) {
   // Mixin the parameterized flag into options
   var _options = _.assign({
     parameterized: this.parameterized,
+    parameterPrefix: this.parameterPrefix,
     caseSensitive: this.caseSensitive,
     escapeCharacter: this.escapeCharacter
   }, options);
@@ -193,6 +198,7 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
       // Mixin the parameterized flag into options
       _options = _.assign({
         parameterized: self.parameterized,
+        parameterPrefix: self.parameterPrefix,
         caseSensitive: self.caseSensitive,
         escapeCharacter: self.escapeCharacter
       }, options);
@@ -248,6 +254,7 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
       // Mixin the parameterized flag into options
       _options = _.assign({
         parameterized: self.parameterized,
+        parameterPrefix: self.parameterPrefix,
         caseSensitive: self.caseSensitive,
         escapeCharacter: self.escapeCharacter
       }, options);

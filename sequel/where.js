@@ -205,7 +205,7 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
 
         _.keys(self.schema[populationAlias].attributes).forEach(function(attr) {
           if(!hop(self.schema[populationAlias].attributes[attr], 'primaryKey')) return;
-          childPK = attr;
+          childPK = self.schema[populationAlias].attributes[attr].columnName || attr;
         });
 
         population.criteria.sort = {};

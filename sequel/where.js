@@ -109,8 +109,9 @@ WhereBuilder.prototype.single = function single(queryObject, options) {
     var childPK;
 
     _.keys(this.schema[this.currentTable].attributes).forEach(function(attr) {
-      if(!hop(self.schema[self.currentTable].attributes[attr], 'primaryKey')) return;
-      childPK = attr;
+      var expandedAttr = self.schema[self.currentTable].attributes[attr];
+      if(!hop(expandedAttr, 'primaryKey')) return;
+      childPK = expandedAttr.columnName || attr;
     });
 
     queryObject.sort = {};
@@ -204,8 +205,9 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
       if(!hop(population.criteria, 'sort')) {
 
         _.keys(self.schema[populationAlias].attributes).forEach(function(attr) {
-          if(!hop(self.schema[populationAlias].attributes[attr], 'primaryKey')) return;
-          childPK = attr;
+          var expandedAttr = self.schema[populationAlias].attributes[attr];
+          if(!hop(expandedAttr, 'primaryKey')) return;
+          childPK = expandedAttr.columnName || attr;
         });
 
         population.criteria.sort = {};
@@ -259,8 +261,9 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
       if(!hop(stage2.criteria, 'sort')) {
 
         _.keys(self.schema[stage2ChildAlias].attributes).forEach(function(attr) {
-          if(!hop(self.schema[stage2ChildAlias].attributes[attr], 'primaryKey')) return;
-          childPK = attr;
+          var expandedAttr = self.schema[stage2ChildAlias].attributes[attr];
+          if(!hop(expandedAttr, 'primaryKey')) return;
+          childPK = expandedAttr.columnName || attr;
         });
 
         stage2.criteria.sort = {};

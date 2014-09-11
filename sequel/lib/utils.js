@@ -74,7 +74,7 @@ utils.mapAttributes = function(data, options) {
       params.push('$' + i);
     }
     else {
-      if(value === null) {
+      if(value === null || value === undefined) {
         params.push('null');
       }
       else {

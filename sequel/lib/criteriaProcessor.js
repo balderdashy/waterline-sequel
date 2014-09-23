@@ -334,6 +334,12 @@ CriteriaProcessor.prototype.process = function process(parent, value, combinator
         _param = utils.escapeName(self.currentTable, self.escapeCharacter) + '.' + utils.escapeName(parent, self.escapeCharacter);
       }
 
+      // Check for an empty array to avoid issues with NOT IN ()
+      if ((key === '!' || key === 'not') && Array.isArray(obj[key]) && obj[key].length === 0) {
+        self.queryString += 'TRUE AND ';
+        return;
+      }
+
       self.queryString += _param + ' ';
       self.prepareCriterion(key, obj[key]);
       self.queryString += ' AND ';

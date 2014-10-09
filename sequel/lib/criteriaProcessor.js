@@ -242,7 +242,12 @@ CriteriaProcessor.prototype._in = function _in(key, val) {
   var lower = false;
 
   // Check if key is a string
-  if(self.currentSchema[key] && self.currentSchema[key].type === 'text') {
+  var schema = self.currentSchema && self.currentSchema[key];
+  if(!_.isPlainObject(schema)) {
+    schema = { type: schema };
+  }
+
+  if(schema && schema.type === 'text' || schema.type === 'string') {
     caseSensitivity = false;
     lower = true;
   }

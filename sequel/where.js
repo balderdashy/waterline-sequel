@@ -282,7 +282,7 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
         selectKeys.push({ table: stage2.child, key: schema.columnName || key });
       });
 
-      queryString += '(SELECT ';
+      queryString += '(SELECT DISTINCT';
       selectKeys.forEach(function(projection) {
         var projectionAlias = _.find(_.values(self.schema), {tableName: projection.table}).identity;
         queryString += utils.escapeName(projectionAlias, self.escapeCharacter) + '.' + utils.escapeName(projection.key, self.escapeCharacter) + ',';

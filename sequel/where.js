@@ -292,12 +292,13 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
       queryString += utils.escapeName(stage1.child, self.escapeCharacter) + '.' + utils.escapeName(stage1.childKey, self.escapeCharacter) + ' AS "___' + stage1.childKey + '"';
 
       queryString += ' FROM ' + utils.escapeName(stage2.child, self.escapeCharacter) + ' AS ' + utils.escapeName(stage2ChildAlias, self.escapeCharacter) + ' ';
-      queryString += ' INNER JOIN ' + utils.escapeName(stage1.child, self.escapeCharacter) + ' ON ' + utils.escapeName(stage2.parent, self.escapeCharacter);
-      queryString += '.' + utils.escapeName(stage2.parentKey, self.escapeCharacter) + ' = ' + utils.escapeName(stage2ChildAlias, self.escapeCharacter) + '.' + utils.escapeName(stage2.childKey, self.escapeCharacter);
-      queryString += ' WHERE ' + utils.escapeName(stage2ChildAlias, self.escapeCharacter) + '.' + utils.escapeName(stage2.childKey, self.escapeCharacter) + ' IN ';
-      queryString += '(SELECT ' + utils.escapeName(stage1.child, self.escapeCharacter) + '.' + utils.escapeName(stage2.parentKey, self.escapeCharacter) + ' FROM ';
-      queryString += utils.escapeName(stage1.child, self.escapeCharacter) + ' WHERE ' + utils.escapeName(stage1.child, self.escapeCharacter) + '.' + utils.escapeName(stage1.childKey, self.escapeCharacter);
-      queryString +=  ' = ^?^ ) ';
+      queryString += ' INNER JOIN ('
+      queryString +=   ' SELECT ' + utils.escapeName(stage1.child, self.escapeCharacter) + '.' + utils.escapeName(stage2.parentKey, self.escapeCharacter);
+      queryString +=   ' ,' + utils.escapeName(stage1.child, self.escapeCharacter) + '.' + utils.escapeName(stage1.childKey, self.escapeCharacter);
+      queryString +=   ' FROM ' + utils.escapeName(stage1.child, self.escapeCharacter) + ' WHERE ' + utils.escapeName(stage1.child, self.escapeCharacter) + '.' + utils.escapeName(stage1.childKey, self.escapeCharacter) + ' = ^?^ ';
+      queryString += ' )';
+      queryString += ' AS ' + utils.escapeName(stage1.child, self.escapeCharacter);
+      queryString += ' ON ' + utils.escapeName(stage1.child, self.escapeCharacter) +'.' + utils.escapeName(stage2.parentKey, self.escapeCharacter) + ' = ' + utils.escapeName(stage2ChildAlias, self.escapeCharacter) + '.' + utils.escapeName(stage2.childKey, self.escapeCharacter);
 
       if(parsedCriteria) {
 
@@ -323,3 +324,4 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
 
   return queries;
 };
+

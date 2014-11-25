@@ -57,8 +57,9 @@ utils.escapeName = function escapeName(name, escapeCharacter) {
  * @returns {string}
  */
 
-utils.populationAlias = function (alias) {
-  return '__' + alias;
+utils.populationAlias = function (alias, prefix) {
+  prefix = prefix || '__';
+  return prefix + alias;
 };
 
 /**

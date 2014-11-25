@@ -48,6 +48,8 @@ var hop = utils.object.hasOwnProperty;
 var WhereBuilder = module.exports = function WhereBuilder(schema, currentTable, options) {
 
   this.schema = schema;
+  this.prefixAlias = "__";
+  this.tableAs = " AS ";
   this.currentTable = currentTable;
 
   this.wlNext = {};
@@ -62,6 +64,16 @@ var WhereBuilder = module.exports = function WhereBuilder(schema, currentTable, 
 
   if(options && hop(options, 'escapeCharacter')) {
     this.escapeCharacter = options.escapeCharacter;
+  }
+
+  if(options && hop(options, 'prefixAlias')) {
+    this.prefixAlias = options.prefixAlias;
+  }
+
+  if(options && hop(options, 'explicitTableAs')) {
+    if (!options.explicitAs) {
+      this.tableAs = " ";
+	}
   }
 
   // Add support for WL Next features
@@ -93,14 +105,14 @@ WhereBuilder.prototype.single = function single(queryObject, options) {
 
     var strategy = queryObject.instructions[attr].strategy.strategy;
     var population = queryObject.instructions[attr].instructions[0];
-    var alias = utils.escapeName(utils.populationAlias(population.alias), self.escapeCharacter);
+    var alias = utils.escapeName(utils.populationAlias(population.alias, self.prefixAlias), self.escapeCharacter);
 
     var parentAlias = _.find(_.values(self.schema), {tableName: population.parent}).tableName;
     // Handle hasFK
     if(strategy === 1) {
 
       // Set outer join logic
-      queryString += 'LEFT OUTER JOIN ' + utils.escapeName(population.child, self.escapeCharacter) + ' AS ' + alias + ' ON ';
+      queryString += 'LEFT OUTER JOIN ' + utils.escapeName(population.child, self.escapeCharacter) + self.tableAs + alias + ' ON ';
       queryString += utils.escapeName(parentAlias, self.escapeCharacter) + '.' + utils.escapeName(population.parentKey, self.escapeCharacter);
       queryString += ' = ' + alias + '.' + utils.escapeName(population.childKey, self.escapeCharacter);
 
@@ -109,7 +121,7 @@ WhereBuilder.prototype.single = function single(queryObject, options) {
   });
 
   if(addSpace) {
-    queryString += ' ';
+    queryString += ' '; //https://github.com/balderdashy/waterline-sequel
   }
 
   var tmpCriteria = _.cloneDeep(queryObject);
@@ -230,7 +242,7 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
       // Read the queryObject and get back a query string and params
       parsedCriteria = criteriaParser.read(population.criteria);
 
-      queryString = '(SELECT * FROM ' + utils.escapeName(population.child, self.escapeCharacter) + ' AS ' + utils.escapeName(populationAlias, self.escapeCharacter) + ' WHERE ' + utils.escapeName(population.childKey, self.escapeCharacter) + ' = ^?^ ';
+      queryString = '(SELECT * FROM ' + utils.escapeName(population.child, self.escapeCharacter) + self.tableAs + utils.escapeName(populationAlias, self.escapeCharacter) + ' WHERE ' + utils.escapeName(population.childKey, self.escapeCharacter) + ' = ^?^ ';
       if(parsedCriteria) {
 
         // If where criteria was used append an AND clause

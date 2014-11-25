@@ -18,6 +18,8 @@ var SelectBuilder = module.exports = function(schema, currentTable, queryObject,
   this.currentTable = _.find(_.values(schema), {tableName: currentTable}).identity;
   this.escapeCharacter = '"';
   this.cast = false;
+  this.prefixAlias = "__";
+  this.tableAs = " AS ";
 
   if(options && hop(options, 'escapeCharacter')) {
     this.escapeCharacter = options.escapeCharacter;
@@ -25,6 +27,16 @@ var SelectBuilder = module.exports = function(schema, currentTable, queryObject,
 
   if(options && hop(options, 'cast')) {
     this.cast = options.cast;
+  }
+
+  if(options && hop(options, 'prefixAlias')) {
+    this.prefixAlias = options.prefixAlias;
+  }
+
+  if(options && hop(options, 'explicitTableAs')) {
+    if (!options.explicitAs) {
+      this.tableAs = " ";
+	}
   }
 
   var queries = [];
@@ -81,7 +93,7 @@ SelectBuilder.prototype.buildSimpleSelect = function buildSimpleSelect(queryObje
     _.keys(self.schema[childAlias].attributes).forEach(function(key) {
       var schema = self.schema[childAlias].attributes[key];
       if(hop(schema, 'collection')) return;
-      selectKeys.push({ table: population.alias ? "__"+population.alias : population.child, key: schema.columnName || key, alias: population.parentKey });
+      selectKeys.push({ table: population.alias ? self.prefixAlias+population.alias : population.child, key: schema.columnName || key, alias: population.parentKey });
     });
   });
 
@@ -99,7 +111,7 @@ SelectBuilder.prototype.buildSimpleSelect = function buildSimpleSelect(queryObje
   });
 
   // Remove the last comma
-  query = query.slice(0, -2) + ' FROM ' + tableName + ' AS ' + utils.escapeName(self.currentTable, self.escapeCharacter) + ' ';
+  query = query.slice(0, -2) + ' FROM ' + tableName + self.tableAs + utils.escapeName(self.currentTable, self.escapeCharacter) + ' ';
 
   return query;
 };
@@ -209,6 +221,6 @@ SelectBuilder.prototype.processAggregates = function processAggregates(criteria)
   query = query.slice(0, -2) + ' ';
 
   // Add FROM clause
-  query += 'FROM ' + utils.escapeName(self.schema[self.currentTable].tableName, self.escapeCharacter) + ' AS ' + tableName + ' ';
+  query += 'FROM ' + utils.escapeName(self.schema[self.currentTable].tableName, self.escapeCharacter) + self.tableAs + tableName + ' ';
   return query;
 };

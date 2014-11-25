@@ -48,6 +48,8 @@ var Sequel = module.exports = function(schema, options) {
   // MySQL and Oracle require this, but it doesn't work in Postgresql.
   this.declareDeleteAlias = options && utils.object.hasOwnProperty(options, 'declareDeleteAlias') ? options.declareDeleteAlias : true;
 
+  this.tableAs = options && utils.object.hasOwnProperty(options, 'tableAs') ? options.escapeCharacter : ' AS ';
+
   this.values = [];
 
   return this;
@@ -137,7 +139,7 @@ Sequel.prototype.update = function update(currentTable, queryObject, data) {
   // Get the attribute identity (as opposed to the table name)
   var identity = _.find(_.values(this.schema), {tableName: currentTable}).identity;
   // Create the query with the tablename aliased as the identity (in case they are different)
-  var query = 'UPDATE ' + utils.escapeName(currentTable, this.escapeCharacter) + ' AS ' + utils.escapeName(identity, this.escapeCharacter) + ' ';
+  var query = 'UPDATE ' + utils.escapeName(currentTable, this.escapeCharacter) + self.tableAs + utils.escapeName(identity, this.escapeCharacter) + ' ';
 
   // Transform the Data object into arrays used in a parameterized query
   var attributes = utils.mapAttributes(data, options);
@@ -186,7 +188,7 @@ Sequel.prototype.destroy = function destroy(currentTable, queryObject) {
   // Get the attribute identity (as opposed to the table name)
   var identity = _.find(_.values(this.schema), {tableName: currentTable}).identity;
 
-  var query = 'DELETE ' + (this.declareDeleteAlias ? utils.escapeName(identity, this.escapeCharacter) : '') + ' FROM ' + utils.escapeName(currentTable, this.escapeCharacter) + ' AS ' + utils.escapeName(identity, this.escapeCharacter) + ' ';
+  var query = 'DELETE ' + (this.declareDeleteAlias ? utils.escapeName(identity, this.escapeCharacter) : '') + ' FROM ' + utils.escapeName(currentTable, this.escapeCharacter) + self.tableAs + utils.escapeName(identity, this.escapeCharacter) + ' ';
 
   // Build Criteria clause
   var whereObject = this.simpleWhere(currentTable, queryObject);

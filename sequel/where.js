@@ -49,6 +49,8 @@ var WhereBuilder = module.exports = function WhereBuilder(schema, currentTable, 
 
   this.schema = schema;
   this.currentTable = _.find(_.values(schema), {tableName: currentTable}).identity;
+  this.prefixAlias = "__";
+  this.tableAs = " AS ";
 
   if(options && hop(options, 'parameterized')) {
     this.parameterized = options.parameterized;
@@ -60,6 +62,16 @@ var WhereBuilder = module.exports = function WhereBuilder(schema, currentTable, 
 
   if(options && hop(options, 'escapeCharacter')) {
     this.escapeCharacter = options.escapeCharacter;
+  }
+
+  if(options && hop(options, 'prefixAlias')) {
+    this.prefixAlias = options.prefixAlias;
+  }
+
+  if(options && hop(options, 'explicitTableAs')) {
+    if (!options.explicitAs) {
+      this.tableAs = " ";
+	}
   }
 
   return this;
@@ -89,16 +101,16 @@ WhereBuilder.prototype.single = function single(queryObject, options) {
     if(strategy === 1) {
 
       // Set outer join logic
-      queryString += 'LEFT OUTER JOIN ' + utils.escapeName(population.child, self.escapeCharacter) + ' AS ' + utils.escapeName('__'+population.alias, self.escapeCharacter) + ' ON ';
+      queryString += 'LEFT OUTER JOIN ' + utils.escapeName(population.child, self.escapeCharacter) + self.tableAs + utils.escapeName(self.prefixAlias + population.alias, self.escapeCharacter) + ' ON ';
       queryString += utils.escapeName(parentAlias, self.escapeCharacter) + '.' + utils.escapeName(population.parentKey, self.escapeCharacter);
-      queryString += ' = ' + utils.escapeName('__'+population.alias, self.escapeCharacter) + '.' + utils.escapeName(population.childKey, self.escapeCharacter);
+      queryString += ' = ' + utils.escapeName(self.prefixAlias + population.alias, self.escapeCharacter) + '.' + utils.escapeName(population.childKey, self.escapeCharacter);
 
       addSpace = true;
     }
   });
 
   if(addSpace) {
-    queryString += ' ';
+    queryString += ' ';https://github.com/balderdashy/waterline-sequel
   }
 
   var tmpCriteria = _.cloneDeep(queryObject);
@@ -217,7 +229,7 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
       // Read the queryObject and get back a query string and params
       parsedCriteria = criteriaParser.read(population.criteria);
 
-      queryString = '(SELECT * FROM ' + utils.escapeName(population.child, self.escapeCharacter) + ' AS ' + utils.escapeName(populationAlias, self.escapeCharacter) + ' WHERE ' + utils.escapeName(population.childKey, self.escapeCharacter) + ' = ^?^ ';
+      queryString = '(SELECT * FROM ' + utils.escapeName(population.child, self.escapeCharacter) + self.tableAs + utils.escapeName(populationAlias, self.escapeCharacter) + ' WHERE ' + utils.escapeName(population.childKey, self.escapeCharacter) + ' = ^?^ ';
       if(parsedCriteria) {
 
         // If where criteria was used append an AND clause

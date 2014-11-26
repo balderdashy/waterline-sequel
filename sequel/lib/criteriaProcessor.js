@@ -146,6 +146,10 @@ CriteriaProcessor.prototype.expand = function expand(key, val) {
       self.like(val);
       return;
 
+    case 'rownum':
+      self.rownum(val);
+      return;
+
     // Key/Value
     default:
 
@@ -236,6 +240,31 @@ CriteriaProcessor.prototype.like = function like(val) {
     expandBlock(parent);
   });
 
+};
+
+/**
+ * Handle `ROWNUM` Criteria
+ */
+
+CriteriaProcessor.prototype.rownum = function rownum(val) {
+
+    var self = this;
+
+    if (_.isPlainObject(val)) {
+        if (val.min && val.max) {
+            self.queryString += 'ROWNUM >= ' + val.min + ' AND ROWNUM < ' + val.max + ' AND ';
+        } else {
+            var keys = _.keys(val);
+            if (keys.length > 0) {
+                var key = keys[0];
+                self.queryString += 'ROWNUM ';
+                self.prepareCriterion(key, val[key]);
+                self.queryString += ' AND ';
+            }
+        }
+    } else {
+        self.queryString += 'ROWNUM <= ' + value + ' AND ';
+    }
 };
 
 

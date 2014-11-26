@@ -48,7 +48,13 @@ var Sequel = module.exports = function(schema, options) {
   // MySQL and Oracle require this, but it doesn't work in Postgresql.
   this.declareDeleteAlias = options && utils.object.hasOwnProperty(options, 'declareDeleteAlias') ? options.declareDeleteAlias : true;
 
-  this.tableAs = options && utils.object.hasOwnProperty(options, 'explicitTableAs') ? options.escapeCharacter : ' AS ';
+  this.explicitTableAs = options && utils.object.hasOwnProperty(options, 'explicitTableAs') ? options.explicitTableAs : true;
+
+  this.prefixAlias = options && utils.object.hasOwnProperty(options, 'prefixAlias') ? options.prefixAlias : '__';
+
+  this.tableAs = this.explicitTableAs ? ' AS ' : ' ';
+
+  this.stringDelimiter = options && utils.object.hasOwnProperty(options, 'stringDelimiter') ? options.stringDelimiter : '"';
 
   this.values = [];
 
@@ -178,7 +184,7 @@ Sequel.prototype.update = function update(currentTable, queryObject, data) {
 };
 
 
-/**
+/**une chaine vide
  * Build Delete SQL query.
  *
  */
@@ -215,7 +221,10 @@ Sequel.prototype.select = function select(currentTable, queryObject) {
   var options = {
     escapeCharacter: this.escapeCharacter,
     caseSensitive: this.caseSensitive,
-    cast: this.cast
+    cast: this.cast,
+	explicitTableAs: this.explicitTableAs,
+    prefixAlias: this.prefixAlias,
+    stringDelimiter: this.stringDelimiter
   };
 
   return new SelectBuilder(this.schema, currentTable, queryObject, options);
@@ -229,7 +238,10 @@ Sequel.prototype.simpleWhere = function simpleWhere(currentTable, queryObject, o
   var _options = {
     parameterized: this.parameterized,
     caseSensitive: this.caseSensitive,
-    escapeCharacter: this.escapeCharacter
+    escapeCharacter: this.escapeCharacter,
+	explicitTableAs: this.explicitTableAs,
+    prefixAlias: this.prefixAlias,
+    stringDelimiter: this.stringDelimiter
   };
 
   var where = new WhereBuilder(this.schema, currentTable, _options);
@@ -240,7 +252,10 @@ Sequel.prototype.complexWhere = function complexWhere(currentTable, queryObject,
   var _options = {
     parameterized: this.parameterized,
     caseSensitive: this.caseSensitive,
-    escapeCharacter: this.escapeCharacter
+    escapeCharacter: this.escapeCharacter,
+	explicitTableAs: this.explicitTableAs,
+    prefixAlias: this.prefixAlias,
+    stringDelimiter: this.stringDelimiter	
   };
 
   var where = new WhereBuilder(this.schema, currentTable, _options);

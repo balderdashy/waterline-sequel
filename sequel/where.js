@@ -51,6 +51,7 @@ var WhereBuilder = module.exports = function WhereBuilder(schema, currentTable, 
   this.currentTable = _.find(_.values(schema), {tableName: currentTable}).identity;
   this.prefixAlias = "__";
   this.tableAs = " AS ";
+  this.stringDelimiter = '"';
 
   if(options && hop(options, 'parameterized')) {
     this.parameterized = options.parameterized;
@@ -73,6 +74,11 @@ var WhereBuilder = module.exports = function WhereBuilder(schema, currentTable, 
       this.tableAs = " ";
 	}
   }
+
+  if(options && hop(options, 'stringDelimiter')) {
+      this.stringDelimiter = options.stringDelimiter;
+  }
+
 
   return this;
 };
@@ -143,7 +149,8 @@ WhereBuilder.prototype.single = function single(queryObject, options) {
   var _options = _.assign({
     parameterized: this.parameterized,
     caseSensitive: this.caseSensitive,
-    escapeCharacter: this.escapeCharacter
+    escapeCharacter: this.escapeCharacter,
+    stringDelimiter: this.stringDelimiter
   }, options);
 
   this.criteriaParser = new CriteriaParser(this.currentTable, this.schema, _options);

@@ -20,6 +20,7 @@ var SelectBuilder = module.exports = function(schema, currentTable, queryObject,
   this.cast = false;
   this.prefixAlias = "__";
   this.tableAs = " AS ";
+  this.stringDelimiter = '"';
 
   if(options && hop(options, 'escapeCharacter')) {
     this.escapeCharacter = options.escapeCharacter;
@@ -38,6 +39,11 @@ var SelectBuilder = module.exports = function(schema, currentTable, queryObject,
       this.tableAs = " ";
 	}
   }
+
+  if(options && hop(options, 'stringDelimiter')) {
+      this.stringDelimiter = options.stringDelimiter;
+  }
+
 
   var queries = [];
   queries.push(this.buildSimpleSelect(queryObject));

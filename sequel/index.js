@@ -48,7 +48,7 @@ var Sequel = module.exports = function(schema, options) {
   // MySQL and Oracle require this, but it doesn't work in Postgresql.
   this.declareDeleteAlias = options && utils.object.hasOwnProperty(options, 'declareDeleteAlias') ? options.declareDeleteAlias : true;
 
-  this.tableAs = options && utils.object.hasOwnProperty(options, 'tableAs') ? options.escapeCharacter : ' AS ';
+  this.tableAs = options && utils.object.hasOwnProperty(options, 'explicitTableAs') ? options.escapeCharacter : ' AS ';
 
   this.values = [];
 

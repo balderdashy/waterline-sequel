@@ -20,6 +20,7 @@ var SelectBuilder = module.exports = function(schema, currentTable, queryObject,
   this.cast = false;
   this.prefixAlias = "__";
   this.tableAs = " AS ";
+  this.stringDelimiter = '"';
   this.wlNext = {};
 
   if(options && hop(options, 'escapeCharacter')) {
@@ -35,9 +36,13 @@ var SelectBuilder = module.exports = function(schema, currentTable, queryObject,
   }
 
   if(options && hop(options, 'explicitTableAs')) {
-    if (!options.explicitAs) {
+    if (!options.explicitTableAs) {
       this.tableAs = " ";
 	}
+  }
+
+  if(options && hop(options, 'stringDelimiter')) {
+      this.stringDelimiter = options.stringDelimiter;
   }
 
   // Add support for WLNext features

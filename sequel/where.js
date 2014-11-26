@@ -50,6 +50,7 @@ var WhereBuilder = module.exports = function WhereBuilder(schema, currentTable, 
   this.schema = schema;
   this.prefixAlias = "__";
   this.tableAs = " AS ";
+  this.stringDelimiter = '"';
   this.currentTable = currentTable;
 
   this.wlNext = {};
@@ -71,9 +72,13 @@ var WhereBuilder = module.exports = function WhereBuilder(schema, currentTable, 
   }
 
   if(options && hop(options, 'explicitTableAs')) {
-    if (!options.explicitAs) {
+    if (!options.explicitTableAs) {
       this.tableAs = " ";
 	}
+  }
+
+  if(options && hop(options, 'stringDelimiter')) {
+      this.stringDelimiter = options.stringDelimiter;
   }
 
   // Add support for WL Next features
@@ -155,6 +160,7 @@ WhereBuilder.prototype.single = function single(queryObject, options) {
     parameterized: this.parameterized,
     caseSensitive: this.caseSensitive,
     escapeCharacter: this.escapeCharacter,
+    stringDelimiter: this.stringDelimiter,
     wlNext: this.wlNext
   }, options);
 
@@ -315,9 +321,9 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
       });
 
       // Add an inner join to give us a key to select from
-      queryString += utils.escapeName(stage1.child, self.escapeCharacter) + '.' + utils.escapeName(stage1.childKey, self.escapeCharacter) + ' AS "___' + stage1.childKey + '"';
+      queryString += utils.escapeName(stage1.child, self.escapeCharacter) + '.' + utils.escapeName(stage1.childKey, self.escapeCharacter) + self.tableAs + '"___' + stage1.childKey + '"';
 
-      queryString += ' FROM ' + utils.escapeName(stage2.child, self.escapeCharacter) + ' AS ' + utils.escapeName(stage2ChildAlias, self.escapeCharacter) + ' ';
+      queryString += ' FROM ' + utils.escapeName(stage2.child, self.escapeCharacter) + self.tableAs + utils.escapeName(stage2ChildAlias, self.escapeCharacter) + ' ';
       queryString += ' INNER JOIN ' + utils.escapeName(stage1.child, self.escapeCharacter) + ' ON ' + utils.escapeName(stage2.parent, self.escapeCharacter);
       queryString += '.' + utils.escapeName(stage2.parentKey, self.escapeCharacter) + ' = ' + utils.escapeName(stage2ChildAlias, self.escapeCharacter) + '.' + utils.escapeName(stage2.childKey, self.escapeCharacter);
       queryString += ' WHERE ' + utils.escapeName(stage1.child, self.escapeCharacter) + '.' + utils.escapeName(stage1.childKey, self.escapeCharacter) + ' = ^?^ ';

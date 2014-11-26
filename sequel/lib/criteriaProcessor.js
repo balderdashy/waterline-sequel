@@ -44,6 +44,7 @@ var CriteriaProcessor = module.exports = function CriteriaProcessor(currentTable
   this.parameterized = true;
   this.caseSensitive = true;
   this.escapeCharacter = '"';
+  this.stringDelimiter = '"';
   this.wlNext = {};
 
   if(options && utils.object.hasOwnProperty(options, 'parameterized')) {
@@ -56,6 +57,10 @@ var CriteriaProcessor = module.exports = function CriteriaProcessor(currentTable
 
   if(options && utils.object.hasOwnProperty(options, 'escapeCharacter')) {
     this.escapeCharacter = options.escapeCharacter;
+  }
+
+  if(options && utils.object.hasOwnProperty(options, 'stringDelimiter')) {
+    this.stringDelimiter = options.stringDelimiter;
   }
 
   if(options && utils.object.hasOwnProperty(options, 'paramCount')) {
@@ -374,7 +379,7 @@ CriteriaProcessor.prototype._in = function _in(key, val) {
     }
     else {
       if(_.isString(value)) {
-        value = '"' + utils.escapeString(value) + '"';
+        value = self.stringDelimiter + utils.escapeString(value) + self.stringDelimiter;
       }
 
       self.queryString += value + ',';
@@ -500,7 +505,7 @@ CriteriaProcessor.prototype.processSimple = function processSimple (tableName, p
   }
 
   if (_.isString(value)) {
-    value = '"' + utils.escapeString(value) +'"';
+    value = this.stringDelimiter + utils.escapeString(value) + this.stringDelimiter;
   }
 
   this.queryString += parent + ' ' + combinator + ' ' + value;
@@ -609,7 +614,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
       ('00' + value.getMinutes()).slice(-2) + ':' +
       ('00' + value.getSeconds()).slice(-2);
 
-    value = '"' + value + '"';
+    value = this.stringDelimiter + value + this.stringDelimiter;
     escapedDate = true;
   }
 
@@ -624,7 +629,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
       }
       else {
         if(_.isString(value) && !escapedDate) {
-          value = '"' + utils.escapeString(value) + '"';
+          value = this.stringDelimiter + utils.escapeString(value) + this.stringDelimiter;
         }
         str = '< ' + value;
       }
@@ -640,7 +645,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
       }
       else {
         if(_.isString(value) && !escapedDate) {
-          value = '"' + utils.escapeString(value) + '"';
+          value = this.stringDelimiter + utils.escapeString(value) + this.stringDelimiter;
         }
         str = '<= ' + value;
       }
@@ -656,7 +661,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
       }
       else {
         if(_.isString(value) && !escapedDate) {
-          value = '"' + utils.escapeString(value) + '"';
+          value = this.stringDelimiter + utils.escapeString(value) + this.stringDelimiter;
         }
         str = '> ' + value;
       }
@@ -672,7 +677,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
       }
       else {
         if(_.isString(value) && !escapedDate) {
-          value = '"' + utils.escapeString(value) + '"';
+          value = this.stringDelimiter + utils.escapeString(value) + this.stringDelimiter;
         }
         str = '>= ' + value;
       }
@@ -708,7 +713,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
             value.forEach(function(val) {
 
               if(_.isString(val)) {
-                val = '"' + utils.escapeString(val) + '"';
+                val = this.stringDelimiter + utils.escapeString(val) + this.stringDelimiter;
               }
 
               str += val + ',';
@@ -726,7 +731,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
           }
           else {
             if(_.isString(value)) {
-              value = '"' + utils.escapeString(value) + '"';
+              value = this.stringDelimiter + utils.escapeString(value) + this.stringDelimiter;
             }
 
             str = '<> ' + value;
@@ -756,7 +761,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
       }
       else {
         // Note that wildcards are not escaped out of like criterion intentionally
-        str = comparator + ' "' + utils.escapeString(value) + '"';
+        str = comparator + ' ' + this.stringDelimiter + utils.escapeString(value) + this.stringDelimiter;
       }
 
       break;
@@ -780,7 +785,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
         str = comparator + ' ' + '$' + this.paramCount;
       }
       else {
-        str = comparator + ' "%' + utils.escapeString(value, true) + '%"';
+        str = comparator + ' ' + this.stringDelimiter + '%' + utils.escapeString(value, true) + '%' + this.stringDelimiter;
       }
 
       break;
@@ -804,7 +809,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
         str = comparator + ' ' + '$' + this.paramCount;
       }
       else {
-        str = comparator + ' "' + utils.escapeString(value, true) + '%"';
+        str = comparator + ' ' + this.stringDelimiter + utils.escapeString(value, true) + '%' + this.stringDelimiter;
       }
 
       break;
@@ -828,7 +833,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
         str = comparator + ' ' + '$' + this.paramCount;
       }
       else {
-        str = comparator + ' "%' + utils.escapeString(value, true) + '"';
+        str = comparator + ' ' + this.stringDelimiter + '%' + utils.escapeString(value, true) + this.stringDelimiter;
       }
 
       break;

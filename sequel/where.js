@@ -70,7 +70,7 @@ var WhereBuilder = module.exports = function WhereBuilder(schema, currentTable, 
   }
 
   if(options && hop(options, 'explicitTableAs')) {
-    if (!options.explicitAs) {
+    if (!options.explicitTableAs) {
       this.tableAs = " ";
 	}
   }
@@ -116,7 +116,7 @@ WhereBuilder.prototype.single = function single(queryObject, options) {
   });
 
   if(addSpace) {
-    queryString += ' ';https://github.com/balderdashy/waterline-sequel
+    queryString += ' ';
   }
 
   var tmpCriteria = _.cloneDeep(queryObject);

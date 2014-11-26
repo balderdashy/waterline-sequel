@@ -35,7 +35,7 @@ var SelectBuilder = module.exports = function(schema, currentTable, queryObject,
   }
 
   if(options && hop(options, 'explicitTableAs')) {
-    if (!options.explicitAs) {
+    if (!options.explicitTableAs) {
       this.tableAs = " ";
 	}
   }

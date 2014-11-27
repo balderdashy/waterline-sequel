@@ -252,7 +252,7 @@ Sequel.prototype.destroy = function destroy(currentTable, queryObject) {
   // Get the attribute identity (as opposed to the table name)
   var identity = currentTable;
 
-  var query = 'DELETE ' + (this.declareDeleteAlias ? utils.escapeName(identity, this.escapeCharacter) : '') + ' FROM ' + utils.escapeName(currentTable, this.escapeCharacter) + self.tableAs + utils.escapeName(identity, this.escapeCharacter) + ' ';
+  var query = 'DELETE ' + (this.declareDeleteAlias ? utils.escapeName(identity, this.escapeCharacter) : '') + ' FROM ' + utils.escapeName(currentTable, this.escapeCharacter) + this.tableAs + utils.escapeName(identity, this.escapeCharacter) + ' ';
 
   // Build Criteria clause
   var whereObject = this.simpleWhere(currentTable, queryObject);

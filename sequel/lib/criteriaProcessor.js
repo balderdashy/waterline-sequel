@@ -192,7 +192,11 @@ CriteriaProcessor.prototype.like = function like(val) {
     var caseSensitive = true;
 
     // Check if parent is a string, if so make sure it's case sensitive.
-    if(self.currentSchema[parent] && self.currentSchema[parent].type === 'text') {
+    if(self.currentSchema[parent] &&
+        (self.currentSchema[parent] === 'text' ||
+         self.currentSchema[parent] === 'string' ||
+         self.currentSchema[parent].type === 'string' ||
+         self.currentSchema[parent].type === 'text')) {
       caseSensitive = false;
     }
 
@@ -326,7 +330,11 @@ CriteriaProcessor.prototype.process = function process(parent, value, combinator
       }
 
       // Check if key is a string
-      if(self.currentSchema[parent] && self.currentSchema[parent].type === 'text') {
+      if (self.currentSchema[parent] && 
+           (self.currentSchema[parent].type === 'text' ||
+            self.currentSchema[parent].type === 'string' ||
+            self.currentSchema[parent] === 'string' ||
+            self.currentSchema[parent] === 'text')) {
         lower = true;
       }
 
@@ -361,7 +369,11 @@ CriteriaProcessor.prototype.process = function process(parent, value, combinator
   var lower = false;
 
   // Check if parent is a number or anything that can't be lowercased
-  if(self.currentSchema[parent] && self.currentSchema[parent].type === 'text') {
+  if(self.currentSchema[parent] && 
+      (self.currentSchema[parent] === 'text' ||
+       self.currentSchema[parent] === 'string' ||
+       self.currentSchema[parent].type === 'string' ||
+       self.currentSchema[parent].type === 'text')) {
     lower = true;
   }
 

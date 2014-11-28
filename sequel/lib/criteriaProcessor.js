@@ -268,7 +268,7 @@ CriteriaProcessor.prototype.rownum = function rownum(val) {
             }
         }
     } else {
-        self.queryString += 'ROWNUM <= ' + value + ' AND ';
+        self.queryString += 'ROWNUM <= ' + val + ' AND ';
     }
 };
 

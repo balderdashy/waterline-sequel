@@ -204,7 +204,7 @@ Sequel.prototype.update = function update(currentTable, queryObject, data) {
   // Get the attribute identity (as opposed to the table name)
   var identity = currentTable;
   // Create the query with the tablename aliased as the identity (in case they are different)
-  var query = 'UPDATE ' + utils.escapeName(currentTable, this.escapeCharacter) + self.tableAs + utils.escapeName(identity, this.escapeCharacter) + ' ';
+  var query = 'UPDATE ' + utils.escapeName(currentTable, this.escapeCharacter) + this.tableAs + utils.escapeName(identity, this.escapeCharacter) + ' ';
 
   // Transform the Data object into arrays used in a parameterized query
   var attributes = utils.mapAttributes(data, options);

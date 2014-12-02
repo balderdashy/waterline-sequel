@@ -56,6 +56,8 @@ var Sequel = module.exports = function(schema, options) {
 
   this.stringDelimiter = options && utils.object.hasOwnProperty(options, 'stringDelimiter') ? options.stringDelimiter : '"';
 
+  this.rownum = options && utils.object.hasOwnProperty(options, 'rownum') ? options.rownum : false;
+
   this.values = [];
 
   return this;
@@ -224,7 +226,8 @@ Sequel.prototype.select = function select(currentTable, queryObject) {
     cast: this.cast,
 	explicitTableAs: this.explicitTableAs,
     prefixAlias: this.prefixAlias,
-    stringDelimiter: this.stringDelimiter
+    stringDelimiter: this.stringDelimiter,
+    rownum: this.rownum
   };
 
   return new SelectBuilder(this.schema, currentTable, queryObject, options);

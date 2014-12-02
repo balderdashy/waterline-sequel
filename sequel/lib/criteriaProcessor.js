@@ -318,7 +318,7 @@ CriteriaProcessor.prototype._in = function _in(key, val) {
     }
     else {
       if(_.isString(value)) {
-        value = this.stringDelimiter + utils.escapeString(value) + this.stringDelimiter;
+        value = self.stringDelimiter + utils.escapeString(value) + self.stringDelimiter;
       }
 
       self.queryString += value + ',';
@@ -564,7 +564,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
             value.forEach(function(val) {
 
               if(_.isString(val)) {
-                val = this.stringDelimiter + utils.escapeString(val) + this.stringDelimiter;
+                val = self.stringDelimiter + utils.escapeString(val) + self.stringDelimiter;
               }
 
               str += val + ',';

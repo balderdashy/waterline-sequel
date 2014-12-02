@@ -58,6 +58,8 @@ var Sequel = module.exports = function(schema, options) {
 
   this.stringDelimiter = options && utils.object.hasOwnProperty(options, 'stringDelimiter') ? options.stringDelimiter : '"';
 
+  this.rownum = options && utils.object.hasOwnProperty(options, 'rownum') ? options.rownum : false;
+
   // Waterline NEXT
   // These are flags that can be toggled today and expose future features. If any of the following are turned
   // on the adapter tests will probably not pass. If you toggle these know what you are getting into.
@@ -283,6 +285,7 @@ Sequel.prototype.select = function select(currentTable, queryObject) {
 	explicitTableAs: this.explicitTableAs,
     prefixAlias: this.prefixAlias,
     stringDelimiter: this.stringDelimiter,
+    rownum: this.rownum,
     wlNext: this.wlNext
   };
 

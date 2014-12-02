@@ -21,6 +21,7 @@ var SelectBuilder = module.exports = function(schema, currentTable, queryObject,
   this.prefixAlias = "__";
   this.tableAs = " AS ";
   this.stringDelimiter = '"';
+  this.rownum = false;
   this.wlNext = {};
 
   if(options && hop(options, 'escapeCharacter')) {
@@ -42,7 +43,11 @@ var SelectBuilder = module.exports = function(schema, currentTable, queryObject,
   }
 
   if(options && hop(options, 'stringDelimiter')) {
-      this.stringDelimiter = options.stringDelimiter;
+    this.stringDelimiter = options.stringDelimiter;
+  }
+
+  if(options && hop(options, 'rownum')) {
+    this.rownum = options.rownum;
   }
 
   // Add support for WLNext features
@@ -77,6 +82,10 @@ SelectBuilder.prototype.buildSimpleSelect = function buildSimpleSelect(queryObje
 
   var selectKeys = [];
   var query = 'SELECT ';
+
+  if (this.rownum) {
+    query += 'ROWNUM AS LINE_NUMBER,';
+  }
 
   var attributes = queryObject.select || Object.keys(this.schema[this.currentTable].attributes);
   delete queryObject.select;

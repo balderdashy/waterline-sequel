@@ -50,15 +50,23 @@ var Sequel = module.exports = function(schema, options) {
   // MySQL and Oracle require this, but it doesn't work in Postgresql.
   this.declareDeleteAlias = options && utils.object.hasOwnProperty(options, 'declareDeleteAlias') ? options.declareDeleteAlias : true;
 
+  // Determinie if an explicite 'AS' is written between the tableName and its aliasName, e.g
+  // SELECT * FROM `tableName` `otherTableName`
+  // Oracle require this
   this.explicitTableAs = options && utils.object.hasOwnProperty(options, 'explicitTableAs') ? options.explicitTableAs : true;
 
+  // Set the prefix string use on aliasName in associations, default is __
   this.prefixAlias = options && utils.object.hasOwnProperty(options, 'prefixAlias') ? options.prefixAlias : '__';
 
-  this.tableAs = this.explicitTableAs ? ' AS ' : ' ';
-
+  // Set the character used before and after string value to delimit them, default is "
   this.stringDelimiter = options && utils.object.hasOwnProperty(options, 'stringDelimiter') ? options.stringDelimiter : '"';
 
+  // Determine if SELECT queries include a ROWNUM column for skip and limit them, e.q
+  // SELECT ROWNUM AS LINE_NUMBER, * FROM `tableName`
+  // Oracle require this for limit and skip
   this.rownum = options && utils.object.hasOwnProperty(options, 'rownum') ? options.rownum : false;
+
+  this.tableAs = this.explicitTableAs ? ' AS ' : ' ';
 
   // Waterline NEXT
   // These are flags that can be toggled today and expose future features. If any of the following are turned
@@ -75,7 +83,6 @@ var Sequel = module.exports = function(schema, options) {
 
 
   this.values = [];
-
   return this;
 };
 
@@ -245,7 +252,7 @@ Sequel.prototype.update = function update(currentTable, queryObject, data) {
 };
 
 
-/**une chaine vide
+/**
  * Build Delete SQL query.
  */
 
@@ -282,7 +289,7 @@ Sequel.prototype.select = function select(currentTable, queryObject) {
     escapeCharacter: this.escapeCharacter,
     caseSensitive: this.caseSensitive,
     cast: this.cast,
-	explicitTableAs: this.explicitTableAs,
+    explicitTableAs: this.explicitTableAs,
     prefixAlias: this.prefixAlias,
     stringDelimiter: this.stringDelimiter,
     rownum: this.rownum,
@@ -301,7 +308,7 @@ Sequel.prototype.simpleWhere = function simpleWhere(currentTable, queryObject, o
     parameterized: this.parameterized,
     caseSensitive: this.caseSensitive,
     escapeCharacter: this.escapeCharacter,
-	explicitTableAs: this.explicitTableAs,
+    explicitTableAs: this.explicitTableAs,
     prefixAlias: this.prefixAlias,
     stringDelimiter: this.stringDelimiter,
     wlNext: this.wlNext
@@ -316,7 +323,7 @@ Sequel.prototype.complexWhere = function complexWhere(currentTable, queryObject,
     parameterized: this.parameterized,
     caseSensitive: this.caseSensitive,
     escapeCharacter: this.escapeCharacter,
-	explicitTableAs: this.explicitTableAs,
+    explicitTableAs: this.explicitTableAs,
     prefixAlias: this.prefixAlias,
     stringDelimiter: this.stringDelimiter	
   };

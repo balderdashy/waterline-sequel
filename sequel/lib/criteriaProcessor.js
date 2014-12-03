@@ -700,6 +700,7 @@ CriteriaProcessor.prototype.group = function(options) {
   if(!Array.isArray(options)) options = [options];
 
   options.forEach(function(key) {
+    key = self.currentSchema[key].columnName || key;
     self.queryString += utils.escapeName(self.currentTable, self.escapeCharacter) + '.' + utils.escapeName(key, self.escapeCharacter) + ', ';
   });
 

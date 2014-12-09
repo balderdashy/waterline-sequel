@@ -200,7 +200,7 @@ CriteriaProcessor.prototype.like = function like(val) {
       caseSensitive = false;
     }
 
-    var comparator = this.caseSensitive ? 'ILIKE' : 'LIKE';
+    var comparator = self.caseSensitive ? 'ILIKE' : 'LIKE';
 
     self.process(parent, val[parent], comparator, caseSensitive);
     self.queryString += ' AND ';

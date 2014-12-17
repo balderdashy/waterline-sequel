@@ -81,6 +81,10 @@ var WhereBuilder = module.exports = function WhereBuilder(schema, currentTable, 
       this.stringDelimiter = options.stringDelimiter;
   }
 
+  if (options && hop(options, 'rownum')) {
+      this.rownum = options.rownum;
+  }
+
   // Add support for WL Next features
   if(options && hop(options, 'wlNext')) {
     this.wlNext = options.wlNext;
@@ -161,6 +165,7 @@ WhereBuilder.prototype.single = function single(queryObject, options) {
     caseSensitive: this.caseSensitive,
     escapeCharacter: this.escapeCharacter,
     stringDelimiter: this.stringDelimiter,
+	rownum: this.rownum,
     wlNext: this.wlNext
   }, options);
 
@@ -249,6 +254,26 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
       parsedCriteria = criteriaParser.read(population.criteria);
 
       queryString = '(SELECT * FROM ' + utils.escapeName(population.child, self.escapeCharacter) + self.tableAs + utils.escapeName(populationAlias, self.escapeCharacter) + ' WHERE ' + utils.escapeName(population.childKey, self.escapeCharacter) + ' = ^?^ ';
+
+      if (self.rownum) {
+        queryString = '(SELECT ';
+        var sortKeys = null;
+        if (population.criteria.sort) 
+          sortKeys = _.keys(population.criteria.sort);
+        if (sortKeys && sortKeys.length > 0) {
+          queryString += 'ROW_NUMBER() OVER (ORDER BY ';
+          sortKeys.forEach(function(key) {
+            var direction = population.criteria.sort[key] === 1 ? 'ASC' : 'DESC';
+            queryString += utils.escapeName(populationAlias, self.escapeCharacter) + '.' + utils.escapeName(key, self.escapeCharacter) + ' ' + direction + ',';
+          });
+          queryString = queryString.slice(0, -1);
+          queryString += ') ';
+        } else {
+          queryString += 'ROWNUM ';
+        }
+        queryString += 'AS LINE_NUMBER, ' + utils.escapeName(populationAlias, self.escapeCharacter)  + '.* FROM ' + utils.escapeName(population.child, self.escapeCharacter) + self.tableAs + utils.escapeName(populationAlias, self.escapeCharacter) + ' WHERE ' + utils.escapeName(population.childKey, self.escapeCharacter) + ' = ^?^ ';
+      }
+      
       if(parsedCriteria) {
 
         // If where criteria was used append an AND clause
@@ -315,6 +340,29 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
       });
 
       queryString += '(SELECT ';
+      
+      if (self.rownum) {
+        queryString += 'ROW_NUMBER() ';
+        var sortKeys = null;
+        if (stage2.criteria.sort)
+          sortKeys = _.keys(stage2.criteria.sort);
+        if (sortKeys && sortKeys.length > 0) {
+          var projectionAlias = _.find(_.values(self.schema), {tableName: stage2.child}).identity;
+          queryString += 'OVER (ORDER BY ';
+          sortKeys.forEach(function(key) {
+            var direction = stage2.criteria.sort[key] === 1 ? 'ASC' : 'DESC';
+            queryString += utils.escapeName(projectionAlias, self.escapeCharacter) + '.' + utils.escapeName(key, self.escapeCharacter) + ' ' + direction + ',';
+          });
+          queryString = queryString.slice(0, -1);
+          queryString += ') ';
+        }
+        else {
+          queryString += 'ROWNUM ';
+        }
+        queryString += 'AS LINE_NUMBER, ';
+      }
+
+      
       selectKeys.forEach(function(projection) {
         var projectionAlias = _.find(_.values(self.schema), {tableName: projection.table}).tableName;
         queryString += utils.escapeName(projectionAlias, self.escapeCharacter) + '.' + utils.escapeName(projection.key, self.escapeCharacter) + ',';

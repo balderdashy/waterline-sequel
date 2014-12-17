@@ -325,7 +325,8 @@ Sequel.prototype.complexWhere = function complexWhere(currentTable, queryObject,
     escapeCharacter: this.escapeCharacter,
     explicitTableAs: this.explicitTableAs,
     prefixAlias: this.prefixAlias,
-    stringDelimiter: this.stringDelimiter	
+    stringDelimiter: this.stringDelimiter,
+    rownum: this.rownum	
   };
 
   var where = new WhereBuilder(this.schema, currentTable, _options);

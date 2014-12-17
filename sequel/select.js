@@ -77,8 +77,24 @@ SelectBuilder.prototype.buildSimpleSelect = function buildSimpleSelect(queryObje
   var selectKeys = [];
   var query = 'SELECT ';
 
-  if (this.rownum) {
-    query += 'ROWNUM AS LINE_NUMBER,';
+  if (self.rownum) {
+    if (hop(queryObject, 'sort')) {
+      var sortKeys = _.keys(queryObject.sort);
+      if (sortKeys && sortKeys.length > 0) {
+        query += 'ROW_NUMBER() OVER (ORDER BY ';
+        sortKeys.forEach(function(key) {
+          var direction = queryObject.sort[key] === 1 ? 'ASC' : 'DESC';
+          query += utils.escapeName(self.currentTable, self.escapeCharacter) + '.' + utils.escapeName(key, self.escapeCharacter) + ' ' + direction + ',';
+        });
+        query = query.slice(0, -1);
+        query += ') ';
+      } else {
+        query += 'ROWNUM ';
+      }
+      query += 'AS LINE_NUMBER, ';
+    }
+    else
+      query += 'ROWNUM AS LINE_NUMBER, ';
   }
 
   var attributes = queryObject.select || Object.keys(this.schema[this.currentTable].attributes);
@@ -107,7 +123,7 @@ SelectBuilder.prototype.buildSimpleSelect = function buildSimpleSelect(queryObje
     _.keys(self.schema[childAlias].attributes).forEach(function(key) {
       var schema = self.schema[childAlias].attributes[key];
       if(hop(schema, 'collection')) return;
-      selectKeys.push({ table: population.alias ? self.prefixAlias+population.alias : population.child, key: schema.columnName || key, alias: population.parentKey });
+      selectKeys.push({ table: population.alias ? self.prefixAlias + population.alias : population.child, key: schema.columnName || key, alias: population.parentKeyAlias || population.parentKey});
     });
   });
 

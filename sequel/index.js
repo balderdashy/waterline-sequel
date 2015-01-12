@@ -48,8 +48,24 @@ var Sequel = module.exports = function(schema, options) {
   // MySQL and Oracle require this, but it doesn't work in Postgresql.
   this.declareDeleteAlias = options && utils.object.hasOwnProperty(options, 'declareDeleteAlias') ? options.declareDeleteAlias : true;
 
-  this.values = [];
+  // Determinie if an explicite 'AS' is written between the tableName and its aliasName, e.g
+  // SELECT * FROM `tableName` `otherTableName`
+  // Oracle require this
+  this.explicitTableAs = options && utils.object.hasOwnProperty(options, 'explicitTableAs') ? options.explicitTableAs : true;
 
+  // Set the prefix string use on aliasName in associations, default is __
+  this.prefixAlias = options && utils.object.hasOwnProperty(options, 'prefixAlias') ? options.prefixAlias : '__';
+
+  // Set the character used before and after string value to delimit them, default is "
+  this.stringDelimiter = options && utils.object.hasOwnProperty(options, 'stringDelimiter') ? options.stringDelimiter : '"';
+
+  // Determine if SELECT queries include a ROWNUM column for skip and limit them, e.q
+  // SELECT ROWNUM AS LINE_NUMBER, * FROM `tableName`
+  // Oracle require this for limit and skip
+  this.rownum = options && utils.object.hasOwnProperty(options, 'rownum') ? options.rownum : false;
+
+  this.tableAs = this.explicitTableAs ? ' AS ' : ' ';
+  this.values = [];
   return this;
 };
 
@@ -137,7 +153,7 @@ Sequel.prototype.update = function update(currentTable, queryObject, data) {
   // Get the attribute identity (as opposed to the table name)
   var identity = _.find(_.values(this.schema), {tableName: currentTable}).identity;
   // Create the query with the tablename aliased as the identity (in case they are different)
-  var query = 'UPDATE ' + utils.escapeName(currentTable, this.escapeCharacter) + ' AS ' + utils.escapeName(identity, this.escapeCharacter) + ' ';
+  var query = 'UPDATE ' + utils.escapeName(currentTable, this.escapeCharacter) + this.tableAs + utils.escapeName(identity, this.escapeCharacter) + ' ';
 
   // Transform the Data object into arrays used in a parameterized query
   var attributes = utils.mapAttributes(data, options);
@@ -186,7 +202,7 @@ Sequel.prototype.destroy = function destroy(currentTable, queryObject) {
   // Get the attribute identity (as opposed to the table name)
   var identity = _.find(_.values(this.schema), {tableName: currentTable}).identity;
 
-  var query = 'DELETE ' + (this.declareDeleteAlias ? utils.escapeName(identity, this.escapeCharacter) : '') + ' FROM ' + utils.escapeName(currentTable, this.escapeCharacter) + ' AS ' + utils.escapeName(identity, this.escapeCharacter) + ' ';
+  var query = 'DELETE ' + (this.declareDeleteAlias ? utils.escapeName(identity, this.escapeCharacter) : '') + ' FROM ' + utils.escapeName(currentTable, this.escapeCharacter) + this.tableAs + utils.escapeName(identity, this.escapeCharacter) + ' ';
 
   // Build Criteria clause
   var whereObject = this.simpleWhere(currentTable, queryObject);
@@ -213,7 +229,11 @@ Sequel.prototype.select = function select(currentTable, queryObject) {
   var options = {
     escapeCharacter: this.escapeCharacter,
     caseSensitive: this.caseSensitive,
-    cast: this.cast
+    cast: this.cast,
+    explicitTableAs: this.explicitTableAs,
+    prefixAlias: this.prefixAlias,
+    stringDelimiter: this.stringDelimiter,
+    rownum: this.rownum
   };
 
   return new SelectBuilder(this.schema, currentTable, queryObject, options);
@@ -227,7 +247,10 @@ Sequel.prototype.simpleWhere = function simpleWhere(currentTable, queryObject, o
   var _options = {
     parameterized: this.parameterized,
     caseSensitive: this.caseSensitive,
-    escapeCharacter: this.escapeCharacter
+    escapeCharacter: this.escapeCharacter,
+    explicitTableAs: this.explicitTableAs,
+    prefixAlias: this.prefixAlias,
+    stringDelimiter: this.stringDelimiter
   };
 
   var where = new WhereBuilder(this.schema, currentTable, _options);
@@ -238,7 +261,11 @@ Sequel.prototype.complexWhere = function complexWhere(currentTable, queryObject,
   var _options = {
     parameterized: this.parameterized,
     caseSensitive: this.caseSensitive,
-    escapeCharacter: this.escapeCharacter
+    escapeCharacter: this.escapeCharacter,
+    explicitTableAs: this.explicitTableAs,
+    prefixAlias: this.prefixAlias,
+    stringDelimiter: this.stringDelimiter,
+    rownum: this.rownum	
   };
 
   var where = new WhereBuilder(this.schema, currentTable, _options);

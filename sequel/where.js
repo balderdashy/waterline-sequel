@@ -49,6 +49,9 @@ var WhereBuilder = module.exports = function WhereBuilder(schema, currentTable, 
 
   this.schema = schema;
   this.currentTable = _.find(_.values(schema), {tableName: currentTable}).identity;
+  this.prefixAlias = "__";
+  this.tableAs = " AS ";
+  this.stringDelimiter = '"';
 
   if(options && hop(options, 'parameterized')) {
     this.parameterized = options.parameterized;
@@ -60,6 +63,24 @@ var WhereBuilder = module.exports = function WhereBuilder(schema, currentTable, 
 
   if(options && hop(options, 'escapeCharacter')) {
     this.escapeCharacter = options.escapeCharacter;
+  }
+
+  if(options && hop(options, 'prefixAlias')) {
+    this.prefixAlias = options.prefixAlias;
+  }
+
+  if(options && hop(options, 'explicitTableAs')) {
+    if (!options.explicitTableAs) {
+      this.tableAs = " ";
+	}
+  }
+
+  if(options && hop(options, 'stringDelimiter')) {
+      this.stringDelimiter = options.stringDelimiter;
+  }
+
+  if (options && hop(options, 'rownum')) {
+      this.rownum = options.rownum;
   }
 
   return this;
@@ -89,9 +110,9 @@ WhereBuilder.prototype.single = function single(queryObject, options) {
     if(strategy === 1) {
 
       // Set outer join logic
-      queryString += 'LEFT OUTER JOIN ' + utils.escapeName(population.child, self.escapeCharacter) + ' AS ' + utils.escapeName('__'+population.alias, self.escapeCharacter) + ' ON ';
+      queryString += 'LEFT OUTER JOIN ' + utils.escapeName(population.child, self.escapeCharacter) + self.tableAs + utils.escapeName(self.prefixAlias + population.alias, self.escapeCharacter) + ' ON ';
       queryString += utils.escapeName(parentAlias, self.escapeCharacter) + '.' + utils.escapeName(population.parentKey, self.escapeCharacter);
-      queryString += ' = ' + utils.escapeName('__'+population.alias, self.escapeCharacter) + '.' + utils.escapeName(population.childKey, self.escapeCharacter);
+      queryString += ' = ' + utils.escapeName(self.prefixAlias + population.alias, self.escapeCharacter) + '.' + utils.escapeName(population.childKey, self.escapeCharacter);
 
       addSpace = true;
     }
@@ -131,7 +152,9 @@ WhereBuilder.prototype.single = function single(queryObject, options) {
   var _options = _.assign({
     parameterized: this.parameterized,
     caseSensitive: this.caseSensitive,
-    escapeCharacter: this.escapeCharacter
+    escapeCharacter: this.escapeCharacter,
+    stringDelimiter: this.stringDelimiter,
+	rownum: this.rownum
   }, options);
 
   this.criteriaParser = new CriteriaParser(this.currentTable, this.schema, _options);
@@ -217,7 +240,27 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
       // Read the queryObject and get back a query string and params
       parsedCriteria = criteriaParser.read(population.criteria);
 
-      queryString = '(SELECT * FROM ' + utils.escapeName(population.child, self.escapeCharacter) + ' AS ' + utils.escapeName(populationAlias, self.escapeCharacter) + ' WHERE ' + utils.escapeName(population.childKey, self.escapeCharacter) + ' = ^?^ ';
+      queryString = '(SELECT * FROM ' + utils.escapeName(population.child, self.escapeCharacter) + self.tableAs + utils.escapeName(populationAlias, self.escapeCharacter) + ' WHERE ' + utils.escapeName(population.childKey, self.escapeCharacter) + ' = ^?^ ';
+
+      if (self.rownum) {
+        queryString = '(SELECT ';
+        var sortKeys = null;
+        if (population.criteria.sort) 
+          sortKeys = _.keys(population.criteria.sort);
+        if (sortKeys && sortKeys.length > 0) {
+          queryString += 'ROW_NUMBER() OVER (ORDER BY ';
+          sortKeys.forEach(function(key) {
+            var direction = population.criteria.sort[key] === 1 ? 'ASC' : 'DESC';
+            queryString += utils.escapeName(populationAlias, self.escapeCharacter) + '.' + utils.escapeName(key, self.escapeCharacter) + ' ' + direction + ',';
+          });
+          queryString = queryString.slice(0, -1);
+          queryString += ') ';
+        } else {
+          queryString += 'ROWNUM ';
+        }
+        queryString += 'AS LINE_NUMBER, ' + utils.escapeName(populationAlias, self.escapeCharacter)  + '.* FROM ' + utils.escapeName(population.child, self.escapeCharacter) + self.tableAs + utils.escapeName(populationAlias, self.escapeCharacter) + ' WHERE ' + utils.escapeName(population.childKey, self.escapeCharacter) + ' = ^?^ ';
+      }
+      
       if(parsedCriteria) {
 
         // If where criteria was used append an AND clause
@@ -283,6 +326,29 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
       });
 
       queryString += '(SELECT ';
+      
+      if (self.rownum) {
+        queryString += 'ROW_NUMBER() ';
+        var sortKeys = null;
+        if (stage2.criteria.sort)
+          sortKeys = _.keys(stage2.criteria.sort);
+        if (sortKeys && sortKeys.length > 0) {
+          var projectionAlias = _.find(_.values(self.schema), {tableName: stage2.child}).identity;
+          queryString += 'OVER (ORDER BY ';
+          sortKeys.forEach(function(key) {
+            var direction = stage2.criteria.sort[key] === 1 ? 'ASC' : 'DESC';
+            queryString += utils.escapeName(projectionAlias, self.escapeCharacter) + '.' + utils.escapeName(key, self.escapeCharacter) + ' ' + direction + ',';
+          });
+          queryString = queryString.slice(0, -1);
+          queryString += ') ';
+        }
+        else {
+          queryString += 'ROWNUM ';
+        }
+        queryString += 'AS LINE_NUMBER, ';
+      }
+
+      
       selectKeys.forEach(function(projection) {
         var projectionAlias = _.find(_.values(self.schema), {tableName: projection.table}).identity;
         queryString += utils.escapeName(projectionAlias, self.escapeCharacter) + '.' + utils.escapeName(projection.key, self.escapeCharacter) + ',';
@@ -291,7 +357,7 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
       // Add an inner join to give us a key to select from
       queryString += utils.escapeName(stage1.child, self.escapeCharacter) + '.' + utils.escapeName(stage1.childKey, self.escapeCharacter) + ' AS "___' + stage1.childKey + '"';
 
-      queryString += ' FROM ' + utils.escapeName(stage2.child, self.escapeCharacter) + ' AS ' + utils.escapeName(stage2ChildAlias, self.escapeCharacter) + ' ';
+      queryString += ' FROM ' + utils.escapeName(stage2.child, self.escapeCharacter) + self.tableAs + utils.escapeName(stage2ChildAlias, self.escapeCharacter) + ' ';
       queryString += ' INNER JOIN ' + utils.escapeName(stage1.child, self.escapeCharacter) + ' ON ' + utils.escapeName(stage2.parent, self.escapeCharacter);
       queryString += '.' + utils.escapeName(stage2.parentKey, self.escapeCharacter) + ' = ' + utils.escapeName(stage2ChildAlias, self.escapeCharacter) + '.' + utils.escapeName(stage2.childKey, self.escapeCharacter);
       queryString += ' WHERE ' + utils.escapeName(stage2ChildAlias, self.escapeCharacter) + '.' + utils.escapeName(stage2.childKey, self.escapeCharacter) + ' IN ';

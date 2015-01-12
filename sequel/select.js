@@ -18,6 +18,10 @@ var SelectBuilder = module.exports = function(schema, currentTable, queryObject,
   this.currentTable = _.find(_.values(schema), {tableName: currentTable}).identity;
   this.escapeCharacter = '"';
   this.cast = false;
+  this.prefixAlias = "__";
+  this.tableAs = " AS ";
+  this.stringDelimiter = '"';
+  this.rownum = false;
 
   if(options && hop(options, 'escapeCharacter')) {
     this.escapeCharacter = options.escapeCharacter;
@@ -25,6 +29,24 @@ var SelectBuilder = module.exports = function(schema, currentTable, queryObject,
 
   if(options && hop(options, 'cast')) {
     this.cast = options.cast;
+  }
+
+  if(options && hop(options, 'prefixAlias')) {
+    this.prefixAlias = options.prefixAlias;
+  }
+
+  if(options && hop(options, 'explicitTableAs')) {
+    if (!options.explicitTableAs) {
+      this.tableAs = " ";
+	}
+  }
+
+  if(options && hop(options, 'stringDelimiter')) {
+    this.stringDelimiter = options.stringDelimiter;
+  }
+
+  if(options && hop(options, 'rownum')) {
+    this.rownum = options.rownum;
   }
 
   var queries = [];
@@ -55,6 +77,26 @@ SelectBuilder.prototype.buildSimpleSelect = function buildSimpleSelect(queryObje
   var selectKeys = [];
   var query = 'SELECT ';
 
+  if (self.rownum) {
+    if (hop(queryObject, 'sort')) {
+      var sortKeys = _.keys(queryObject.sort);
+      if (sortKeys && sortKeys.length > 0) {
+        query += 'ROW_NUMBER() OVER (ORDER BY ';
+        sortKeys.forEach(function(key) {
+          var direction = queryObject.sort[key] === 1 ? 'ASC' : 'DESC';
+          query += utils.escapeName(self.currentTable, self.escapeCharacter) + '.' + utils.escapeName(key, self.escapeCharacter) + ' ' + direction + ',';
+        });
+        query = query.slice(0, -1);
+        query += ') ';
+      } else {
+        query += 'ROWNUM ';
+      }
+      query += 'AS LINE_NUMBER, ';
+    }
+    else
+      query += 'ROWNUM AS LINE_NUMBER, ';
+  }
+
   var attributes = queryObject.select || Object.keys(this.schema[this.currentTable].attributes);
   delete queryObject.select;
 
@@ -81,7 +123,7 @@ SelectBuilder.prototype.buildSimpleSelect = function buildSimpleSelect(queryObje
     _.keys(self.schema[childAlias].attributes).forEach(function(key) {
       var schema = self.schema[childAlias].attributes[key];
       if(hop(schema, 'collection')) return;
-      selectKeys.push({ table: population.alias ? "__"+population.alias : population.child, key: schema.columnName || key, alias: population.parentKey });
+      selectKeys.push({ table: population.alias ? self.prefixAlias + population.alias : population.child, key: schema.columnName || key, alias: population.parentKeyAlias || population.parentKey});
     });
   });
 
@@ -99,7 +141,7 @@ SelectBuilder.prototype.buildSimpleSelect = function buildSimpleSelect(queryObje
   });
 
   // Remove the last comma
-  query = query.slice(0, -2) + ' FROM ' + tableName + ' AS ' + utils.escapeName(self.currentTable, self.escapeCharacter) + ' ';
+  query = query.slice(0, -2) + ' FROM ' + tableName + self.tableAs + utils.escapeName(self.currentTable, self.escapeCharacter) + ' ';
 
   return query;
 };
@@ -126,16 +168,17 @@ SelectBuilder.prototype.processAggregates = function processAggregates(criteria)
 
   var query = 'SELECT ';
   var tableName = utils.escapeName(this.currentTable, this.escapeCharacter);
+  var attributes = this.schema[self.currentTable].attributes;
 
   // Append groupBy columns to select statement
   if(criteria.groupBy) {
     if(criteria.groupBy instanceof Array) {
       criteria.groupBy.forEach(function(opt) {
-        query += tableName + '.' + utils.escapeName(opt, self.escapeCharacter) + ', ';
+        query += tableName + '.' + utils.escapeName((attributes[opt].columnName || opt), self.escapeCharacter) + ', ';
       });
 
     } else {
-      query += tableName + '.' + utils.escapeName(criteria.groupBy, self.escapeCharacter) + ', ';
+      query += tableName + '.' + utils.escapeName((attributes[criteria.groupBy].columnName || criteria.groupBy), self.escapeCharacter) + ', ';
     }
   }
 
@@ -144,19 +187,21 @@ SelectBuilder.prototype.processAggregates = function processAggregates(criteria)
     var sum = '';
     if(criteria.sum instanceof Array) {
       criteria.sum.forEach(function(opt) {
+        opt = attributes[opt].columnName || opt;
         sum = 'SUM(' + tableName + '.' + utils.escapeName(opt, self.escapeCharacter) + ')';
         if(self.cast) {
           sum = 'CAST(' + sum + ' AS float)';
         }
-        query += sum + ' AS ' + opt + ', ';
+        query += sum + ' AS ' + utils.escapeName(opt, self.escapeCharacter) + ', ';
       });
 
     } else {
+      criteria.sum = attributes[criteria.sum].columnName || criteria.sum;
       sum = 'SUM(' + tableName + '.' + utils.escapeName(criteria.sum, self.escapeCharacter) + ')';
       if(self.cast) {
         sum = 'CAST(' + sum + ' AS float)';
       }
-      query += sum + ' AS ' + criteria.sum + ', ';
+      query += sum + ' AS ' + utils.escapeName(criteria.sum, self.escapeCharacter) + ', ';
     }
   }
 
@@ -165,18 +210,21 @@ SelectBuilder.prototype.processAggregates = function processAggregates(criteria)
     var avg = '';
     if(criteria.average instanceof Array) {
       criteria.average.forEach(function(opt){
+        opt = attributes[opt].columnName || opt;
         avg = 'AVG(' + tableName + '.' + utils.escapeName(opt, self.escapeCharacter) + ')';
+
         if(self.cast) {
           avg = 'CAST( ' + avg + ' AS float)';
         }
-        query +=  avg + ' AS ' + opt + ', ';
+        query +=  avg + ' AS ' + utils.escapeName(opt, self.escapeCharacter) + ', ';
       });
     } else {
+      criteria.average = attributes[criteria.average].columnName || criteria.average;
       avg = 'AVG(' + tableName + '.' + utils.escapeName(criteria.average, self.escapeCharacter) + ')';
       if(self.cast) {
         avg = 'CAST( ' + avg + ' AS float)';
       }
-      query += avg + ' AS ' + criteria.average + ', ';
+      query += avg + ' AS ' + utils.escapeName(criteria.average, self.escapeCharacter) + ', ';
     }
   }
 
@@ -185,11 +233,13 @@ SelectBuilder.prototype.processAggregates = function processAggregates(criteria)
     var max = '';
     if(criteria.max instanceof Array) {
       criteria.max.forEach(function(opt){
-        query += 'MAX(' + tableName + '.' + utils.escapeName(opt, self.escapeCharacter) + ') AS ' + opt + ', ';
+        opt = attributes[opt].columnName || opt;
+        query += 'MAX(' + tableName + '.' + utils.escapeName(opt, self.escapeCharacter) + ') AS ' + utils.escapeName(opt, self.escapeCharacter) + ', ';
       });
 
     } else {
-      query += 'MAX(' + tableName + '.' + utils.escapeName(criteria.max, self.escapeCharacter) + ') AS ' + criteria.max + ', ';
+	  criteria.max = attributes[criteria.max].columnName || criteria.max;
+      query += 'MAX(' + tableName + '.' + utils.escapeName(criteria.max, self.escapeCharacter) + ') AS ' + utils.escapeName(criteria.max, self.escapeCharacter) + ', ';
     }
   }
 
@@ -197,11 +247,13 @@ SelectBuilder.prototype.processAggregates = function processAggregates(criteria)
   if (criteria.min) {
     if(criteria.min instanceof Array) {
       criteria.min.forEach(function(opt){
-        query += 'MIN(' + tableName + '.' + utils.escapeName(opt, self.escapeCharacter) + ') AS ' + opt + ', ';
+        opt = attributes[opt].columnName || opt;
+        query += 'MIN(' + tableName + '.' + utils.escapeName(opt, self.escapeCharacter) + ') AS ' + utils.escapeName(opt, self.escapeCharacter) + ', ';
       });
 
     } else {
-      query += 'MIN(' + tableName + '.' + utils.escapeName(criteria.min, self.escapeCharacter) + ') AS ' + criteria.min + ', ';
+      criteria.min = attributes[criteria.min].columnName || criteria.min;
+      query += 'MIN(' + tableName + '.' + utils.escapeName(criteria.min, self.escapeCharacter) + ') AS ' + utils.escapeName(criteria.min, self.escapeCharacter) + ', ';
     }
   }
 
@@ -209,6 +261,6 @@ SelectBuilder.prototype.processAggregates = function processAggregates(criteria)
   query = query.slice(0, -2) + ' ';
 
   // Add FROM clause
-  query += 'FROM ' + utils.escapeName(self.schema[self.currentTable].tableName, self.escapeCharacter) + ' AS ' + tableName + ' ';
+  query += 'FROM ' + utils.escapeName(self.schema[self.currentTable].tableName, self.escapeCharacter) + self.tableAs + tableName + ' ';
   return query;
 };

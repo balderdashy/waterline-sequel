@@ -222,7 +222,7 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
 
         // If where criteria was used append an AND clause
         if(population.criteria.where && _.keys(population.criteria.where).length > 0) {
-          queryString += 'AND ';
+          queryString += ' WHERE ';
         }
 
         queryString += parsedCriteria.query;

@@ -32,6 +32,8 @@ var Sequel = module.exports = function(schema, options) {
 
   // Flag whether the database is case-sensitive or not.
   // Default is true.
+  // NOTE: This does not mean that your queries will be case sensitive. It just flags if the queries
+  // should use lower or regex logic for querying.
   this.caseSensitive = options && utils.object.hasOwnProperty(options, 'caseSensitive') ? options.caseSensitive : true;
 
   // Set the escape character, default is "
@@ -47,6 +49,20 @@ var Sequel = module.exports = function(schema, options) {
   // DELETE `tableName` FROM `tableName` as `otherTableName` WHERE `otherTableName`.`foo` = "bar"
   // MySQL and Oracle require this, but it doesn't work in Postgresql.
   this.declareDeleteAlias = options && utils.object.hasOwnProperty(options, 'declareDeleteAlias') ? options.declareDeleteAlias : true;
+
+  // Waterline NEXT
+  // These are flags that can be toggled today and expose future features. If any of the following are turned
+  // on the adapter tests will probably not pass. If you toggle these know what you are getting into.
+  var wlNext = options && utils.object.hasOwnProperty(options, 'wlNext') ? options.wlNext : {};
+  this.wlNext = {
+
+    // Case sensitive - false
+    // In the next version of WL queries will be case sensitive by default.
+    // Set this to true to experiement with that feature today.
+    caseSensitive: utils.object.hasOwnProperty(wlNext, 'caseSensitive') ? wlNext.caseSensitive : false
+
+  };
+
 
   this.values = [];
 
@@ -213,7 +229,8 @@ Sequel.prototype.select = function select(currentTable, queryObject) {
   var options = {
     escapeCharacter: this.escapeCharacter,
     caseSensitive: this.caseSensitive,
-    cast: this.cast
+    cast: this.cast,
+    wlNext: this.wlNext
   };
 
   return new SelectBuilder(this.schema, currentTable, queryObject, options);
@@ -227,7 +244,8 @@ Sequel.prototype.simpleWhere = function simpleWhere(currentTable, queryObject, o
   var _options = {
     parameterized: this.parameterized,
     caseSensitive: this.caseSensitive,
-    escapeCharacter: this.escapeCharacter
+    escapeCharacter: this.escapeCharacter,
+    wlNext: this.wlNext
   };
 
   var where = new WhereBuilder(this.schema, currentTable, _options);

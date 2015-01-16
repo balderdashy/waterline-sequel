@@ -28,6 +28,7 @@ var CriteriaProcessor = module.exports = function CriteriaProcessor(currentTable
   this.parameterized = true;
   this.caseSensitive = true;
   this.escapeCharacter = '"';
+  this.wlNext = {};
 
   if(options && utils.object.hasOwnProperty(options, 'parameterized')) {
     this.parameterized = options.parameterized;
@@ -43,6 +44,10 @@ var CriteriaProcessor = module.exports = function CriteriaProcessor(currentTable
 
   if(options && utils.object.hasOwnProperty(options, 'paramCount')) {
     this.paramCount = options.paramCount;
+  }
+
+  if(options && utils.object.hasOwnProperty(options, 'wlNext')) {
+    this.wlNext = options.wlNext;
   }
 
   return this;
@@ -202,6 +207,11 @@ CriteriaProcessor.prototype.like = function like(val) {
 
     var comparator = self.caseSensitive ? 'ILIKE' : 'LIKE';
 
+    // Override comparator with WL Next features
+    if(hop(self.wlNext, 'caseSensitive') && self.wlNext.caseSensitive) {
+      comparator = 'LIKE';
+    }
+
     self.process(parent, val[parent], comparator, caseSensitive);
     self.queryString += ' AND ';
   };
@@ -224,6 +234,11 @@ CriteriaProcessor.prototype.and = function and(key, val) {
   // Check if key is a string
   if(this.currentSchema[key] && this.currentSchema[key] === 'string') {
     caseSensitive = false;
+  }
+
+  // Override case sensitive with WL Next features
+  if(hop(this.wlNext, 'caseSensitive') && this.wlNext.caseSensitive) {
+    caseSensitive = true;
   }
 
   this.process(key, val, '=', caseSensitive);
@@ -259,6 +274,11 @@ CriteriaProcessor.prototype._in = function _in(key, val) {
   // Override caseSensitivity for databases that don't support it
   if(this.caseSensitive) {
     caseSensitivity = false;
+  }
+
+  // Add support for overriding case sensitivity with WL Next features
+  if(hop(self.wlNext, 'caseSensitive') && self.wlNext.caseSensitive) {
+    caseSensitivity = true;
   }
 
   // Check case sensitivity to decide if LOWER logic is used
@@ -317,6 +337,12 @@ CriteriaProcessor.prototype.process = function process(parent, value, combinator
     caseSensitive = false;
   }
 
+  // Add support for overriding case sensitivity with WL Next features
+  if(hop(self.wlNext, 'caseSensitive') && self.wlNext.caseSensitive) {
+    caseSensitive = true;
+  }
+
+
   // Expand criteria object
   function expandCriteria(obj) {
     var _param;
@@ -330,7 +356,7 @@ CriteriaProcessor.prototype.process = function process(parent, value, combinator
       }
 
       // Check if key is a string
-      if (self.currentSchema[parent] && 
+      if (self.currentSchema[parent] &&
            (self.currentSchema[parent].type === 'text' ||
             self.currentSchema[parent].type === 'string' ||
             self.currentSchema[parent] === 'string' ||
@@ -369,7 +395,7 @@ CriteriaProcessor.prototype.process = function process(parent, value, combinator
   var lower = false;
 
   // Check if parent is a number or anything that can't be lowercased
-  if(self.currentSchema[parent] && 
+  if(self.currentSchema[parent] &&
       (self.currentSchema[parent] === 'text' ||
        self.currentSchema[parent] === 'string' ||
        self.currentSchema[parent].type === 'string' ||
@@ -579,6 +605,11 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
         comparator = 'LIKE';
       }
 
+      // Override comparator with WL Next features
+      if(hop(self.wlNext, 'caseSensitive') && self.wlNext.caseSensitive) {
+        comparator = 'LIKE';
+      }
+
       if(this.parameterized) {
         this.values.push(value);
         str = comparator + ' ' + '$' + this.paramCount;
@@ -595,6 +626,11 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
         comparator = 'ILIKE';
       }
       else {
+        comparator = 'LIKE';
+      }
+
+      // Override comparator with WL Next features
+      if(hop(self.wlNext, 'caseSensitive') && self.wlNext.caseSensitive) {
         comparator = 'LIKE';
       }
 
@@ -617,6 +653,11 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
         comparator = 'LIKE';
       }
 
+      // Override comparator with WL Next features
+      if(hop(self.wlNext, 'caseSensitive') && self.wlNext.caseSensitive) {
+        comparator = 'LIKE';
+      }
+
       if(this.parameterized) {
         this.values.push(value + '%');
         str = comparator + ' ' + '$' + this.paramCount;
@@ -633,6 +674,11 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
         comparator = 'ILIKE';
       }
       else {
+        comparator = 'LIKE';
+      }
+
+      // Override comparator with WL Next features
+      if(hop(self.wlNext, 'caseSensitive') && self.wlNext.caseSensitive) {
         comparator = 'LIKE';
       }
 

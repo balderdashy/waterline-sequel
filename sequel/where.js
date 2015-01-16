@@ -50,6 +50,8 @@ var WhereBuilder = module.exports = function WhereBuilder(schema, currentTable, 
   this.schema = schema;
   this.currentTable = _.find(_.values(schema), {tableName: currentTable}).identity;
 
+  this.wlNext = {};
+
   if(options && hop(options, 'parameterized')) {
     this.parameterized = options.parameterized;
   }
@@ -60,6 +62,11 @@ var WhereBuilder = module.exports = function WhereBuilder(schema, currentTable, 
 
   if(options && hop(options, 'escapeCharacter')) {
     this.escapeCharacter = options.escapeCharacter;
+  }
+
+  // Add support for WL Next features
+  if(options && hop(options, 'wlNext')) {
+    this.wlNext = options.wlNext;
   }
 
   return this;
@@ -131,7 +138,8 @@ WhereBuilder.prototype.single = function single(queryObject, options) {
   var _options = _.assign({
     parameterized: this.parameterized,
     caseSensitive: this.caseSensitive,
-    escapeCharacter: this.escapeCharacter
+    escapeCharacter: this.escapeCharacter,
+    wlNext: this.wlNext
   }, options);
 
   this.criteriaParser = new CriteriaParser(this.currentTable, this.schema, _options);
@@ -195,7 +203,8 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
       _options = _.assign({
         parameterized: self.parameterized,
         caseSensitive: self.caseSensitive,
-        escapeCharacter: self.escapeCharacter
+        escapeCharacter: self.escapeCharacter,
+        wlNext: self.wlNext
       }, options);
 
       // Build the WHERE part of the query string
@@ -251,7 +260,8 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
       _options = _.assign({
         parameterized: self.parameterized,
         caseSensitive: self.caseSensitive,
-        escapeCharacter: self.escapeCharacter
+        escapeCharacter: self.escapeCharacter,
+        wlNext: self.wlNext
       }, options);
 
       // Build the WHERE part of the query string

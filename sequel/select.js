@@ -18,6 +18,7 @@ var SelectBuilder = module.exports = function(schema, currentTable, queryObject,
   this.currentTable = _.find(_.values(schema), {tableName: currentTable}).identity;
   this.escapeCharacter = '"';
   this.cast = false;
+  this.wlNext = {};
 
   if(options && hop(options, 'escapeCharacter')) {
     this.escapeCharacter = options.escapeCharacter;
@@ -25,6 +26,11 @@ var SelectBuilder = module.exports = function(schema, currentTable, queryObject,
 
   if(options && hop(options, 'cast')) {
     this.cast = options.cast;
+  }
+
+  // Add support for WLNext features
+  if(options && hop(options, 'wlNext')) {
+    this.wlNext = options.wlNext
   }
 
   var queries = [];

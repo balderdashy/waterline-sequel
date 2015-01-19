@@ -39,7 +39,7 @@ utils.object.hasOwnProperty = function(obj, prop) {
 utils.escapeName = function escapeName(name, escapeCharacter) {
   var regex = new RegExp(escapeCharacter, 'g');
   var replacementString = '' + escapeCharacter + escapeCharacter;
-  var replacementDot = '' + escapeCharacter + '.' + escapeCharacter;
+  var replacementDot = '\.';
   return '' + escapeCharacter + name.replace(regex, replacementString).replace(/\./g, replacementDot) + escapeCharacter;
 };
 

@@ -567,7 +567,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
             str = 'NOT IN (';
             value.forEach(function(val) {
 
-              if(_.isString(val)) {
+              if(_.isString(val) && !escapedDate) {
                 val = '"' + utils.escapeString(val) + '"';
               }
 
@@ -585,7 +585,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
             str = '<> ' + '$' + this.paramCount;
           }
           else {
-            if(_.isString(value)) {
+            if(_.isString(value) && !escapedDate) {
               value = '"' + utils.escapeString(value) + '"';
             }
 

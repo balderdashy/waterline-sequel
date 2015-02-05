@@ -128,7 +128,7 @@ utils.prepareValue = function(value) {
  */
 
 utils.toSqlDate = function(date) {
-  utc = new Date(
+  var utc = new Date(
     date.getUTCFullYear(),
     date.getUTCMonth(),
     date.getUTCDate(),

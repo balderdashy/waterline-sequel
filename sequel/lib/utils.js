@@ -44,6 +44,18 @@ utils.escapeName = function escapeName(name, escapeCharacter) {
 };
 
 /**
+ * Populate alias. Create the alias for an association
+ *
+ * @param {string} alias
+ *
+ * @returns {string}
+ */
+
+utils.populationAlias = function (alias) {
+  return '__' + alias;
+};
+
+/**
  * Map Attributes
  *
  * Takes a js object and creates arrays used for parameterized

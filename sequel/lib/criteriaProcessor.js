@@ -116,17 +116,17 @@ CriteriaProcessor.prototype.read = function read(options) {
  * @return
  */
 
-CriteriaProcessor.prototype.expand = function expand(key, val, alias) {
+CriteriaProcessor.prototype.expand = function expand(key, val) {
 
   var self = this;
 
   switch(key.toLowerCase()) {
     case 'or':
-      self.or(val, alias);
+      self.or(val);
       return;
 
     case 'like':
-      self.like(val, alias);
+      self.like(val);
       return;
 
     // Key/Value
@@ -134,12 +134,12 @@ CriteriaProcessor.prototype.expand = function expand(key, val, alias) {
 
       // `IN`
       if(val instanceof Array) {
-        self._in(key, val, alias);
+        self._in(key, val);
         return;
       }
 
       // `AND`
-      self.and(key, val, alias);
+      self.and(key, val);
       return;
   }
 };
@@ -149,7 +149,7 @@ CriteriaProcessor.prototype.expand = function expand(key, val, alias) {
  * Handle `OR` Criteria
  */
 
-CriteriaProcessor.prototype.or = function or(val, alias) {
+CriteriaProcessor.prototype.or = function or(val) {
 
   var self = this;
 
@@ -165,7 +165,7 @@ CriteriaProcessor.prototype.or = function or(val, alias) {
 
     // Recursively call expand. Assumes no nesting of `or` statements
     _.keys(statement).forEach(function(key) {
-      self.expand(key, statement[key], alias);
+      self.expand(key, statement[key]);
     });
 
     if(self.queryString.slice(-4) === 'AND ') {
@@ -188,7 +188,7 @@ CriteriaProcessor.prototype.or = function or(val, alias) {
  * Handle `LIKE` Criteria
  */
 
-CriteriaProcessor.prototype.like = function like(val, alias) {
+CriteriaProcessor.prototype.like = function like(val) {
 
   var self = this;
 
@@ -211,7 +211,7 @@ CriteriaProcessor.prototype.like = function like(val, alias) {
       comparator = 'LIKE';
     }
 
-    self.process(parent, val[parent], comparator, caseSensitive, null, alias);
+    self.process(parent, val[parent], comparator, caseSensitive);
     self.queryString += ' AND ';
   };
 
@@ -226,7 +226,7 @@ CriteriaProcessor.prototype.like = function like(val, alias) {
  * Handle `AND` Criteria
  */
 
-CriteriaProcessor.prototype.and = function and(key, val, alias) {
+CriteriaProcessor.prototype.and = function and(key, val) {
 
   var caseSensitive = true;
 
@@ -240,16 +240,37 @@ CriteriaProcessor.prototype.and = function and(key, val, alias) {
     caseSensitive = true;
   }
 
-  this.process(key, val, '=', caseSensitive, null, alias);
+  this.process(key, val, '=', caseSensitive);
   this.queryString += ' AND ';
 };
 
+/**
+ * Get the current table scope.
+ *
+ * @returns {string}
+ */
+CriteriaProcessor.prototype.getTableScope = function () {
+  return this.tableScope || this.currentTable;
+};
+
+/**
+ * Get the alias for the current table scope
+ *
+ * @returns {string}
+ */
+CriteriaProcessor.prototype.getTableAlias = function () {
+  if (this.tableScope) {
+    return utils.populationAlias(this.tableScope)
+  }
+
+  return this.currentTable;
+};
 
 /**
  * Handle `IN` Criteria
  */
 
-CriteriaProcessor.prototype._in = function _in(key, val, alias) {
+CriteriaProcessor.prototype._in = function _in(key, val) {
 
   var self = this;
 
@@ -283,13 +304,13 @@ CriteriaProcessor.prototype._in = function _in(key, val, alias) {
   // Check case sensitivity to decide if LOWER logic is used
   if(!caseSensitivity) {
     if(lower) {
-      key = 'LOWER(' + utils.escapeName(alias || self.currentTable, self.escapeCharacter) + '.' + utils.escapeName(key, self.escapeCharacter) + ')';
+      key = 'LOWER(' + utils.escapeName(self.getTableAlias(), self.escapeCharacter) + '.' + utils.escapeName(key, self.escapeCharacter) + ')';
     } else {
-      key = utils.escapeName(alias || self.currentTable, self.escapeCharacter) + '.' + utils.escapeName(key, self.escapeCharacter);
+      key = utils.escapeName(self.getTableAlias(), self.escapeCharacter) + '.' + utils.escapeName(key, self.escapeCharacter);
     }
     self.queryString += key + ' IN (';
   } else {
-    self.queryString += utils.escapeName(alias || self.currentTable, self.escapeCharacter) + '.' + utils.escapeName(key, self.escapeCharacter) + ' IN (';
+    self.queryString += utils.escapeName(self.getTableAlias(), self.escapeCharacter) + '.' + utils.escapeName(key, self.escapeCharacter) + ' IN (';
   }
 
   // Append each value to query
@@ -365,63 +386,60 @@ CriteriaProcessor.prototype.isChild = function isChild (child) {
  * @param {boolean} [sensitive]
  * @param {string}  [alias]
  */
-CriteriaProcessor.prototype.processSimple = function processSimple (tableName, parent, value, combinator, sensitive, alias) {
+CriteriaProcessor.prototype.processSimple = function processSimple (tableName, parent, value, combinator, sensitive) {
   // Set lower logic to true
-  var lower = false,
-      parentSchema = this.schema[parent],
-      self = this;
+  var sensitiveTypes = ['text', 'string'],
+      currentSchema = this.schema[tableName].attributes,
+      self = this,
+      parentType,
+      lower;
 
-  // Check if parent is a number or anything that can't be lowercased
-  if(parentSchema &&
-    (parentSchema === 'text' ||
-    parentSchema === 'string' ||
-    parentSchema.type === 'string' ||
-    parentSchema.type === 'text')) {
-    lower = true;
+  if (currentSchema[parent]) {
+    parentType = currentSchema[parent].type || currentSchema[parent];
   }
+
+  lower = parentType && sensitiveTypes.indexOf(parentType) > -1;
 
   // Check if value is a string and if so add LOWER logic
   // to work with case in-sensitive queries
 
   if(!sensitive && lower && _.isString(value)) {
     // Add LOWER to parent
-    parent = this.buildParam(alias ? alias : tableName, parent, true);
+    parent = this.buildParam(this.getTableAlias(), parent, true);
     value = value.toLowerCase();
 
   } else {
     // Escape parent
-    parent = this.buildParam(alias ? alias : tableName, parent);
+    parent = this.buildParam(this.getTableAlias(), parent);
   }
 
-  if(value !== null) {
-
-    // Simple Key/Value attributes
-    if(self.parameterized) {
-      this.queryString += parent + ' ' + combinator + ' $' + this.paramCount;
-      this.values.push(value);
-      this.paramCount++;
-    }
-    else {
-      if(_.isDate(value)) {
-        value = value.getFullYear() + '-' +
-        ('00' + (value.getMonth()+1)).slice(-2) + '-' +
-        ('00' + value.getDate()).slice(-2) + ' ' +
-        ('00' + value.getHours()).slice(-2) + ':' +
-        ('00' + value.getMinutes()).slice(-2) + ':' +
-        ('00' + value.getSeconds()).slice(-2);
-      }
-
-      if (_.isString(value)) {
-        value = '"' + utils.escapeString(value) +'"';
-      }
-
-      this.queryString += parent + ' ' + combinator + ' ' + value;
-    }
+  if(value === null) {
+    return this.queryString += parent + ' IS NULL';
   }
 
-  else {
-    this.queryString += parent + ' IS NULL';
+  // Simple Key/Value attributes
+  if(self.parameterized) {
+    this.queryString += parent + ' ' + combinator + ' $' + this.paramCount;
+    this.values.push(value);
+    this.paramCount++;
+
+    return;
   }
+
+  if(_.isDate(value)) {
+    value = value.getFullYear() + '-' +
+    ('00' + (value.getMonth()+1)).slice(-2) + '-' +
+    ('00' + value.getDate()).slice(-2) + ' ' +
+    ('00' + value.getHours()).slice(-2) + ':' +
+    ('00' + value.getMinutes()).slice(-2) + ':' +
+    ('00' + value.getSeconds()).slice(-2);
+  }
+
+  if (_.isString(value)) {
+    value = '"' + utils.escapeString(value) +'"';
+  }
+
+  this.queryString += parent + ' ' + combinator + ' ' + value;
 };
 
 /**
@@ -433,9 +451,10 @@ CriteriaProcessor.prototype.processSimple = function processSimple (tableName, p
  * @param {boolean} sensitive
  * @param {string}  [alias]
  */
-CriteriaProcessor.prototype.processObject = function processObject (parent, value, combinator, sensitive, alias) {
-  var parentSchema = this.schema[parent],
-      self = this;
+CriteriaProcessor.prototype.processObject = function processObject (tableName, parent, value, combinator, sensitive) {
+  var currentSchema = this.schema[tableName].attributes,
+      self = this,
+      parentType;
 
   expandCriteria(value);
 
@@ -444,14 +463,17 @@ CriteriaProcessor.prototype.processObject = function processObject (parent, valu
 
   // Expand criteria object
   function expandCriteria(obj) {
-    var lower   = false,
-        isChild = self.isChild(parent),
-        sensitiveTypes = ['text', 'string']; // haha, "sensitive types". "I'll watch 'the notebook' with you, babe."
+    var isChild = self.isChild(parent),
+        sensitiveTypes = ['text', 'string'], // haha, "sensitive types". "I'll watch 'the notebook' with you, babe."
+        lower;
 
     _.keys(obj).forEach(function(key) {
-
       if (isChild) {
-        return self.expand(key, obj[key], utils.populationAlias(parent));
+        self.tableScope = parent;
+        self.expand(key, obj[key]);
+        self.tableScope = null;
+
+        return;
       }
 
       // If value is an object, recursivly expand it
@@ -459,24 +481,28 @@ CriteriaProcessor.prototype.processObject = function processObject (parent, valu
         return expandCriteria(obj[key]);
       }
 
-      lower = parentSchema && (sensitiveTypes.indexOf(parentSchema) > -1 || sensitiveTypes.indexOf(parentSchema.type) > -1);
+      if (currentSchema[parent]) {
+        parentType = currentSchema[parent].type || currentSchema[parent]
+      }
+
+      lower = parentType && sensitiveTypes.indexOf(parentType) > -1;
 
       // Check if value is a string and if so add LOWER logic
       // to work with case in-sensitive queries
-      self.queryString += self.buildParam(alias ? alias : self.currentTable, parent, !sensitive && _.isString(obj[key]) && lower);
+      self.queryString += self.buildParam(self.getTableAlias(), parent, !sensitive && _.isString(obj[key]) && lower);
       self.prepareCriterion(key, obj[key]);
       self.queryString += ' AND ';
     });
   }
-}
+};
 
 
 /**
  * Process Criteria
  */
 
-CriteriaProcessor.prototype.process = function process(parent, value, combinator, caseSensitive, tableName, alias) {
-  tableName = tableName || this.currentTable;
+CriteriaProcessor.prototype.process = function process(parent, value, combinator, caseSensitive) {
+  var tableName = this.getTableScope();
 
   // Override caseSensitivity for databases that don't support it
   if(this.caseSensitive) {
@@ -488,11 +514,9 @@ CriteriaProcessor.prototype.process = function process(parent, value, combinator
     caseSensitive = true;
   }
 
-  if(_.isPlainObject(value)) {
-    this.processObject(parent, value, combinator, caseSensitive, alias);
-  } else {
-    this.processSimple(tableName, parent, value, combinator, caseSensitive, alias);
-  }
+  var processMethod = _.isPlainObject(value) ? this.processObject : this.processSimple;
+
+  processMethod.apply(this, [tableName, parent, value, combinator, caseSensitive]);
 };
 
 

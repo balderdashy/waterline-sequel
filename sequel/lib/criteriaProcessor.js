@@ -21,6 +21,7 @@ var CriteriaProcessor = module.exports = function CriteriaProcessor(currentTable
   this.currentTable = currentTable;
   this.schema = schema;
   this.currentSchema = schema[currentTable].attributes;
+  this.tableScope = null;
   this.queryString = '';
   this.values = [];
   this.paramCount = 1;

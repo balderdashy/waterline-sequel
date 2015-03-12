@@ -12,8 +12,14 @@
   "dependencies": {
     "lodash": "~2.4.1"
   },
-  "devDependencies": {},
-  "scripts": {},
+  "devDependencies": {
+    "chai": "^2.1.1",
+    "mocha": "^2.2.1",
+    "should": "^5.2.0"
+  },
+  "scripts": {
+    "test": "./node_modules/mocha/bin/mocha -b"
+  },
   "main": "sequel/index",
   "directories": {
     "sequel": "./sequel"

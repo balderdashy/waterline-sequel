@@ -1,8 +1,8 @@
-var assert      = require('chai').assert,
-    Sequel      = require('../../sequel'),
-    schema      = require('../schema'),
-    options     = require('../options'),
-    simpleQuery = require('../queries/simple');
+var assert     = require('chai').assert,
+    Sequel     = require('../../sequel'),
+    schema     = require('../schema'),
+    options    = require('../options'),
+    queries    = require('../queries');
 
 describe('Sequel', function () {
   describe('constructor', function () {
@@ -26,15 +26,16 @@ describe('Sequel', function () {
   });
 
   describe('.select()', function () {
-    context('With a simple query', function () {
-      it('Should properly construct the query we desire.', function (done) {
+    // Loop through the query objects. You can find the instructions in `test/queries`
+    queries.forEach(function (query) {
+      it(query.description, function (done) {
         var sequel      = new Sequel(schema, options),
-            selectQuery = sequel.select(simpleQuery.table, simpleQuery.query);
+            selectQuery = sequel.select(query.table, query.query);
 
         assert.property(selectQuery, 'select');
         assert.isArray(selectQuery.select);
-        assert.lengthOf(selectQuery.select, 1);
-        assert.strictEqual(selectQuery.select[0], simpleQuery.result);
+        assert.lengthOf(selectQuery.select, query.queriesReturned);
+        assert.strictEqual(selectQuery.select[0], query.result);
 
         done();
       });

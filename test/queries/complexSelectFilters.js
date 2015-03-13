@@ -7,40 +7,40 @@ module.exports = {
 
   // The query object used to build this query.
   query      : {
-    "where"       : {
-      "bat": 1,
-      "baz": [1, 2, 3, 4],
-      "or" : [
-        {"color": "red"},
-        {"color": "blue"},
-        {"color": "grey"},
+    where       : {
+      bat: 1,
+      baz: [1, 2, 3, 4],
+      or : [
+        {color: "red"},
+        {color: "blue"},
+        {color: "grey"},
         {
-          "color": {
+          color: {
             ">": "111"
           }
         }
       ]
     },
-    "instructions": {
-      "bat": {
-        "strategy"    : {
-          "strategy": 1,
-          "meta"    : {
-            "parentFK": "bat"
+    instructions: {
+      bat: {
+        strategy    : {
+          strategy: 1,
+          meta    : {
+            parentFK: "bat"
           }
         },
-        "instructions": [
+        instructions: [
           {
-            "parent"         : "foo",
-            "parentKey"      : "bat",
-            "child"          : "bat",
-            "childKey"       : "id",
-            "select"         : ["color_g", "color_h", "color_i", "id", "createdAt", "updatedAt"],
-            "alias"          : "bat",
-            "removeParentKey": true,
-            "model"          : true,
-            "collection"     : false,
-            "criteria"       : {"where": {}}
+            parent         : "foo",
+            parentKey      : "bat",
+            child          : "bat",
+            childKey       : "id",
+            select         : ["color_g", "color_h", "color_i", "id", "createdAt", "updatedAt"],
+            alias          : "bat",
+            removeParentKey: true,
+            model          : true,
+            collection     : false,
+            criteria       : {"where": {}}
           }
         ]
       }

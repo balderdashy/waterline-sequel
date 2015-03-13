@@ -7,7 +7,13 @@ require("fs").readdirSync(__dirname + '/').forEach(function (file) {
     return;
   }
 
-  queries.push(require("./" + file));
+  var query = require("./" + file);
+
+  if (query.skip) {
+    return;
+  }
+
+  queries.push(query);
 });
 
 module.exports = queries;

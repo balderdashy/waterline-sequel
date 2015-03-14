@@ -490,7 +490,7 @@ CriteriaProcessor.prototype.processObject = function processObject (tableName, p
 
       // Check if value is a string and if so add LOWER logic
       // to work with case in-sensitive queries
-      self.queryString += self.buildParam(self.getTableAlias(), parent, !sensitive && _.isString(obj[key]) && lower);
+      self.queryString += self.buildParam(self.getTableAlias(), parent, !sensitive && _.isString(obj[key]) && lower) + ' ';
       self.prepareCriterion(key, obj[key]);
       self.queryString += ' AND ';
     });

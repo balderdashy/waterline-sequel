@@ -48,6 +48,7 @@ var hop = utils.object.hasOwnProperty;
 var WhereBuilder = module.exports = function WhereBuilder(schema, currentTable, options) {
 
   this.schema = schema;
+  this.tableName = currentTable;
   this.currentTable = _.find(_.values(schema), {tableName: currentTable}).identity;
 
   this.wlNext = {};
@@ -115,8 +116,8 @@ WhereBuilder.prototype.single = function single(queryObject, options) {
   if(!hop(queryObject, 'sort')) {
     var childPK;
 
-    _.keys(this.schema[this.currentTable].attributes).forEach(function(attr) {
-      var expandedAttr = self.schema[self.currentTable].attributes[attr];
+    _.keys(this.schema[this.tableName].attributes).forEach(function(attr) {
+      var expandedAttr = self.schema[self.tableName].attributes[attr];
       if(!hop(expandedAttr, 'primaryKey')) return;
       childPK = expandedAttr.columnName || attr;
     });
@@ -142,7 +143,7 @@ WhereBuilder.prototype.single = function single(queryObject, options) {
     wlNext: this.wlNext
   }, options);
 
-  this.criteriaParser = new CriteriaParser(this.currentTable, this.schema, _options);
+  this.criteriaParser = new CriteriaParser(this.tableName, this.schema, _options);
   parsedCriteria = this.criteriaParser.read(tmpCriteria);
   queryString += parsedCriteria.query;
 

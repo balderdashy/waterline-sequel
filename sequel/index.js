@@ -108,48 +108,10 @@ Sequel.prototype.find = function find(currentTable, queryObject) {
 
 };
 
-/**
- * Build a SQL Count Query using the defined schema.
- */
-
-Sequel.prototype.count = function count(currentTable, queryObject) {
-
-  // Step 1:
-  // Build out the Count statements
-  // TO-DO: limit this to a certain column, e.g. id, for performance gains
-  this.queries = ['SELECT COUNT(*) FROM ' + currentTable];
-
-  var whereObject;
-  var childQueries;
-  var query;
-  var values;
-
-  /**
-   * Step 2 - Build out the parent query.
-   */
-
-  whereObject = this.simpleWhere(currentTable, queryObject);
-
-  this.queries[0] += ' ' + whereObject.query;
-  this.values[0] = whereObject.values;
-
-  /**
-   * Step 3 - Build out the child query templates.
-   */
-
-  childQueries = this.complexWhere(currentTable, queryObject);
-  this.queries = this.queries.concat(childQueries);
-
-  return {
-    query: this.queries,
-    values: this.values
-  };
-
-};
-
 
 /**
  * Build a SQL Create Query.
+ *
  */
 
 Sequel.prototype.create = function create(currentTable, data) {
@@ -177,6 +139,7 @@ Sequel.prototype.create = function create(currentTable, data) {
 
 /**
  * Build a SQL Update Query.
+ *
  */
 
 Sequel.prototype.update = function update(currentTable, queryObject, data) {
@@ -188,9 +151,9 @@ Sequel.prototype.update = function update(currentTable, queryObject, data) {
   };
 
   // Get the attribute identity (as opposed to the table name)
-  var identity = _.find(_.values(this.schema), {tableName: currentTable}).identity;
+  //var identity = _.find(_.values(this.schema), {tableName: currentTable}).identity;
   // Create the query with the tablename aliased as the identity (in case they are different)
-  var query = 'UPDATE ' + utils.escapeName(currentTable, this.escapeCharacter) + ' AS ' + utils.escapeName(identity, this.escapeCharacter) + ' ';
+  var query = 'UPDATE ' + utils.escapeName(currentTable, this.escapeCharacter) + ' AS ' + utils.escapeName(currentTable, this.escapeCharacter) + ' ';
 
   // Transform the Data object into arrays used in a parameterized query
   var attributes = utils.mapAttributes(data, options);
@@ -231,6 +194,7 @@ Sequel.prototype.update = function update(currentTable, queryObject, data) {
 
 /**
  * Build Delete SQL query.
+ *
  */
 
 Sequel.prototype.destroy = function destroy(currentTable, queryObject) {

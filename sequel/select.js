@@ -15,6 +15,7 @@ var hop = utils.object.hasOwnProperty;
 var SelectBuilder = module.exports = function(schema, currentTable, queryObject, options) {
 
   this.schema = schema;
+  this.tableName = currentTable;
   this.currentTable = _.find(_.values(schema), {tableName: currentTable}).identity;
   this.escapeCharacter = '"';
   this.cast = false;
@@ -56,21 +57,21 @@ SelectBuilder.prototype.buildSimpleSelect = function buildSimpleSelect(queryObje
   }
 
   // Escape table name
-  var tableName = utils.escapeName(self.schema[self.currentTable].tableName, self.escapeCharacter);
+  var tableName = utils.escapeName(self.tableName, self.escapeCharacter);
 
   var selectKeys = [];
   var query = 'SELECT ';
 
-  var attributes = queryObject.select || Object.keys(this.schema[this.currentTable].attributes);
+  var attributes = queryObject.select || Object.keys(this.schema[this.tableName].attributes);
   delete queryObject.select;
 
   attributes.forEach(function(key) {
     // Default schema to {} in case a raw DB column name is sent.  This shouldn't happen
     // after https://github.com/balderdashy/waterline/commit/687c869ad54f499018ab0b038d3de4435c96d1dd
     // but leaving here as a failsafe.
-    var schema = self.schema[self.currentTable].attributes[key] || {};
+    var schema = self.schema[self.tableName].attributes[key] || {};
     if(hop(schema, 'collection')) return;
-    selectKeys.push({ table: self.currentTable, key: schema.columnName || key });
+    selectKeys.push({ table: self.tableName, key: schema.columnName || key });
   });
 
   // Add any hasFK strategy joins to the main query
@@ -105,7 +106,7 @@ SelectBuilder.prototype.buildSimpleSelect = function buildSimpleSelect(queryObje
   });
 
   // Remove the last comma
-  query = query.slice(0, -2) + ' FROM ' + tableName + ' AS ' + utils.escapeName(self.currentTable, self.escapeCharacter) + ' ';
+  query = query.slice(0, -2) + ' FROM ' + tableName + ' AS ' + utils.escapeName(self.tableName, self.escapeCharacter) + ' ';
 
   return query;
 };
@@ -131,7 +132,7 @@ SelectBuilder.prototype.processAggregates = function processAggregates(criteria)
 
 
   var query = 'SELECT ';
-  var tableName = utils.escapeName(this.currentTable, this.escapeCharacter);
+  var tableName = utils.escapeName(this.tableName, this.escapeCharacter);
 
   // Append groupBy columns to select statement
   if(criteria.groupBy) {
@@ -215,6 +216,6 @@ SelectBuilder.prototype.processAggregates = function processAggregates(criteria)
   query = query.slice(0, -2) + ' ';
 
   // Add FROM clause
-  query += 'FROM ' + utils.escapeName(self.schema[self.currentTable].tableName, self.escapeCharacter) + ' AS ' + tableName + ' ';
+  query += 'FROM ' + utils.escapeName(self.tableName, self.escapeCharacter) + ' AS ' + tableName + ' ';
   return query;
 };

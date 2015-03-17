@@ -1,8 +1,11 @@
 {
   "name": "waterline-sequel",
   "description": "A helper library for generating SQL queries from the Waterline Query Language.",
-  "version": "0.2.1",
-  "author": "Cody Stoltman <particlebanana@gmail.com>",
+  "version": "0.1.1",
+  "author": {
+    "name": "Cody Stoltman",
+    "email": "particlebanana@gmail.com"
+  },
   "url": "http://github.com/balderdashy/waterline-sequel",
   "keywords": [],
   "repository": {
@@ -12,18 +15,48 @@
   "dependencies": {
     "lodash": "~2.4.1"
   },
-  "devDependencies": {
-    "chai": "^2.1.1",
-    "mocha": "^2.2.1",
-    "should": "^5.2.0"
-  },
-  "scripts": {
-    "test": "./node_modules/mocha/bin/mocha -b"
-  },
+  "devDependencies": {},
+  "scripts": {},
   "main": "sequel/index",
   "directories": {
     "sequel": "./sequel"
   },
   "license": "MIT",
-  "bugs": "https://github.com/balderdashy/waterline-sequel/issues"
+  "bugs": {
+    "url": "https://github.com/balderdashy/waterline-sequel/issues"
+  },
+  "gitHead": "4dae54b8817491f54a092f147654224ffedebaff",
+  "homepage": "https://github.com/balderdashy/waterline-sequel",
+  "_id": "waterline-sequel@0.1.1",
+  "_shasum": "37ff379142eac50f3e01ebe2f2ee28f4680ee5ee",
+  "_from": "waterline-sequel@~0.1.1",
+  "_npmVersion": "1.4.28",
+  "_npmUser": {
+    "name": "particlebanana",
+    "email": "particlebanana@gmail.com"
+  },
+  "maintainers": [
+    {
+      "name": "sgress454",
+      "email": "scott@balderdash.co"
+    },
+    {
+      "name": "balderdashy",
+      "email": "mike@balderdash.co"
+    },
+    {
+      "name": "particlebanana",
+      "email": "particlebanana@gmail.com"
+    },
+    {
+      "name": "tjwebb",
+      "email": "me@traviswebb.com"
+    }
+  ],
+  "dist": {
+    "shasum": "37ff379142eac50f3e01ebe2f2ee28f4680ee5ee",
+    "tarball": "http://registry.npmjs.org/waterline-sequel/-/waterline-sequel-0.1.1.tgz"
+  },
+  "_resolved": "https://registry.npmjs.org/waterline-sequel/-/waterline-sequel-0.1.1.tgz",
+  "readme": "ERROR: No README data found!"
 }

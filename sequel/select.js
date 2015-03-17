@@ -16,12 +16,17 @@ var SelectBuilder = module.exports = function(schema, currentTable, queryObject,
 
   this.schema = schema;
   this.currentTable = _.find(_.values(schema), {tableName: currentTable}).identity;
-  this.escapeCharacter = '"';
+  this.escapeCharacter = '\'';
+  this.identifierCharacter = '`';
   this.cast = false;
   this.wlNext = {};
 
   if(options && hop(options, 'escapeCharacter')) {
     this.escapeCharacter = options.escapeCharacter;
+  }
+
+  if (options && hop(options, 'identifierCharacter')) {
+    this.identifierCharacter = options.identifierCharacter;
   }
 
   if(options && hop(options, 'cast')) {
@@ -56,7 +61,7 @@ SelectBuilder.prototype.buildSimpleSelect = function buildSimpleSelect(queryObje
   }
 
   // Escape table name
-  var tableName = utils.escapeName(self.schema[self.currentTable].tableName, self.escapeCharacter);
+  var tableName = utils.escapeName(self.schema[self.currentTable].tableName, self.identifierCharacter);
 
   var selectKeys = [];
   var query = 'SELECT ';
@@ -96,16 +101,16 @@ SelectBuilder.prototype.buildSimpleSelect = function buildSimpleSelect(queryObje
 
     // If there is an alias, set it in the select (used for hasFK associations)
     if(select.alias) {
-      query += utils.escapeName(select.table, self.escapeCharacter) + '.' + utils.escapeName(select.key, self.escapeCharacter) + ' AS ' + self.escapeCharacter + select.alias + '___' + select.key + self.escapeCharacter + ', ';
+      query += utils.escapeName(select.table, self.identifierCharacter) + '.' + utils.escapeName(select.key, self.identifierCharacter) + ' AS ' + self.identifierCharacter + select.alias + '___' + select.key + self.identifierCharacter + ', ';
     }
     else {
-      query += utils.escapeName(select.table, self.escapeCharacter) + '.' + utils.escapeName(select.key, self.escapeCharacter) + ', ';
+      query += utils.escapeName(select.table, self.identifierCharacter) + '.' + utils.escapeName(select.key, self.identifierCharacter) + ', ';
     }
 
   });
 
   // Remove the last comma
-  query = query.slice(0, -2) + ' FROM ' + tableName + ' AS ' + utils.escapeName(self.currentTable, self.escapeCharacter) + ' ';
+  query = query.slice(0, -2) + ' FROM ' + tableName + ' AS ' + utils.escapeName(self.currentTable, self.identifierCharacter) + ' ';
 
   return query;
 };
@@ -131,17 +136,17 @@ SelectBuilder.prototype.processAggregates = function processAggregates(criteria)
 
 
   var query = 'SELECT ';
-  var tableName = utils.escapeName(this.currentTable, this.escapeCharacter);
+  var tableName = utils.escapeName(this.currentTable, this.identifierCharacter);
 
   // Append groupBy columns to select statement
   if(criteria.groupBy) {
     if(criteria.groupBy instanceof Array) {
       criteria.groupBy.forEach(function(opt) {
-        query += tableName + '.' + utils.escapeName(opt, self.escapeCharacter) + ', ';
+        query += tableName + '.' + utils.escapeName(opt, self.identifierCharacter) + ', ';
       });
 
     } else {
-      query += tableName + '.' + utils.escapeName(criteria.groupBy, self.escapeCharacter) + ', ';
+      query += tableName + '.' + utils.escapeName(criteria.groupBy, self.identifierCharacter) + ', ';
     }
   }
 
@@ -150,7 +155,7 @@ SelectBuilder.prototype.processAggregates = function processAggregates(criteria)
     var sum = '';
     if(criteria.sum instanceof Array) {
       criteria.sum.forEach(function(opt) {
-        sum = 'SUM(' + tableName + '.' + utils.escapeName(opt, self.escapeCharacter) + ')';
+        sum = 'SUM(' + tableName + '.' + utils.escapeName(opt, self.identifierCharacter) + ')';
         if(self.cast) {
           sum = 'CAST(' + sum + ' AS float)';
         }
@@ -158,7 +163,7 @@ SelectBuilder.prototype.processAggregates = function processAggregates(criteria)
       });
 
     } else {
-      sum = 'SUM(' + tableName + '.' + utils.escapeName(criteria.sum, self.escapeCharacter) + ')';
+      sum = 'SUM(' + tableName + '.' + utils.escapeName(criteria.sum, self.identifierCharacter) + ')';
       if(self.cast) {
         sum = 'CAST(' + sum + ' AS float)';
       }
@@ -171,14 +176,14 @@ SelectBuilder.prototype.processAggregates = function processAggregates(criteria)
     var avg = '';
     if(criteria.average instanceof Array) {
       criteria.average.forEach(function(opt){
-        avg = 'AVG(' + tableName + '.' + utils.escapeName(opt, self.escapeCharacter) + ')';
+        avg = 'AVG(' + tableName + '.' + utils.escapeName(opt, self.identifierCharacter) + ')';
         if(self.cast) {
           avg = 'CAST( ' + avg + ' AS float)';
         }
         query +=  avg + ' AS ' + opt + ', ';
       });
     } else {
-      avg = 'AVG(' + tableName + '.' + utils.escapeName(criteria.average, self.escapeCharacter) + ')';
+      avg = 'AVG(' + tableName + '.' + utils.escapeName(criteria.average, self.identifierCharacter) + ')';
       if(self.cast) {
         avg = 'CAST( ' + avg + ' AS float)';
       }
@@ -191,11 +196,11 @@ SelectBuilder.prototype.processAggregates = function processAggregates(criteria)
     var max = '';
     if(criteria.max instanceof Array) {
       criteria.max.forEach(function(opt){
-        query += 'MAX(' + tableName + '.' + utils.escapeName(opt, self.escapeCharacter) + ') AS ' + opt + ', ';
+        query += 'MAX(' + tableName + '.' + utils.escapeName(opt, self.identifierCharacter) + ') AS ' + opt + ', ';
       });
 
     } else {
-      query += 'MAX(' + tableName + '.' + utils.escapeName(criteria.max, self.escapeCharacter) + ') AS ' + criteria.max + ', ';
+      query += 'MAX(' + tableName + '.' + utils.escapeName(criteria.max, self.identifierCharacter) + ') AS ' + criteria.max + ', ';
     }
   }
 
@@ -203,11 +208,11 @@ SelectBuilder.prototype.processAggregates = function processAggregates(criteria)
   if (criteria.min) {
     if(criteria.min instanceof Array) {
       criteria.min.forEach(function(opt){
-        query += 'MIN(' + tableName + '.' + utils.escapeName(opt, self.escapeCharacter) + ') AS ' + opt + ', ';
+        query += 'MIN(' + tableName + '.' + utils.escapeName(opt, self.identifierCharacter) + ') AS ' + opt + ', ';
       });
 
     } else {
-      query += 'MIN(' + tableName + '.' + utils.escapeName(criteria.min, self.escapeCharacter) + ') AS ' + criteria.min + ', ';
+      query += 'MIN(' + tableName + '.' + utils.escapeName(criteria.min, self.identifierCharacter) + ') AS ' + criteria.min + ', ';
     }
   }
 
@@ -215,6 +220,6 @@ SelectBuilder.prototype.processAggregates = function processAggregates(criteria)
   query = query.slice(0, -2) + ' ';
 
   // Add FROM clause
-  query += 'FROM ' + utils.escapeName(self.schema[self.currentTable].tableName, self.escapeCharacter) + ' AS ' + tableName + ' ';
+  query += 'FROM ' + utils.escapeName(self.schema[self.currentTable].tableName, self.identifierCharacter) + ' AS ' + tableName + ' ';
   return query;
 };

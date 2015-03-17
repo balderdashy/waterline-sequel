@@ -9,7 +9,7 @@ module.exports = {
   // The query object used to build this query.
   query      : {
     where: {
-      color: 'blue'
+      color: "bl'ue"
     }
   },
 
@@ -30,7 +30,7 @@ module.exports = {
     find  : {
 
       // The queryString we expect to be rendered after calling `Sequel.select()`
-      queryString    : 'SELECT `foo`.`color`, `foo`.`id`, `foo`.`createdAt`, `foo`.`updatedAt`, `foo`.`bar`, `foo`.`bat`, `foo`.`baz` FROM `foo` AS `foo`  WHERE LOWER(`foo`.`color`) = "blue" ',
+      queryString    : "SELECT `foo`.`color`, `foo`.`id`, `foo`.`createdAt`, `foo`.`updatedAt`, `foo`.`bar`, `foo`.`bat`, `foo`.`baz` FROM `foo` AS `foo`  WHERE LOWER(`foo`.`color`) = 'bl\\'ue' ",
 
       // The number of queries that will be returned after calling Sequel.select()
       queriesReturned: 1

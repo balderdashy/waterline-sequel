@@ -88,7 +88,7 @@ utils.mapAttributes = function(data, options) {
   var escapeInserts = options && utils.object.hasOwnProperty(options, 'escapeInserts') ? options.escapeInserts : false;
 
   Object.keys(data).forEach(function(key) {
-    var k = escapeInserts ? (options.escapeCharacter + key + options.escapeCharacter) : key;
+    var k = escapeInserts ? (options.identifierCharacter + key + options.identifierCharacter) : key;
     keys.push(k);
 
     var value = utils.prepareValue(data[key]);

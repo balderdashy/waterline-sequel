@@ -1,7 +1,7 @@
 module.exports = {
   parameterized  : false,
   caseSensitive  : false,
-  escapeCharacter: '`',
+  escapeCharacter: '\'',
   casting        : false,
   canReturnValues: false,
   escapeInserts  : true

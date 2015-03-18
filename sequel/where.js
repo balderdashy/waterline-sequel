@@ -64,6 +64,10 @@ var WhereBuilder = module.exports = function WhereBuilder(schema, currentTable, 
     this.escapeCharacter = options.escapeCharacter;
   }
 
+  if(options && hop(options, 'identifierCharacter')) {
+    this.identifierCharacter = options.identifierCharacter;
+  }
+
   // Add support for WL Next features
   if(options && hop(options, 'wlNext')) {
     this.wlNext = options.wlNext;
@@ -96,9 +100,9 @@ WhereBuilder.prototype.single = function single(queryObject, options) {
     if(strategy === 1) {
 
       // Set outer join logic
-      queryString += 'LEFT OUTER JOIN ' + utils.escapeName(population.child, self.escapeCharacter) + ' AS ' + utils.escapeName('__'+population.alias, self.escapeCharacter) + ' ON ';
-      queryString += utils.escapeName(parentAlias, self.escapeCharacter) + '.' + utils.escapeName(population.parentKey, self.escapeCharacter);
-      queryString += ' = ' + utils.escapeName('__'+population.alias, self.escapeCharacter) + '.' + utils.escapeName(population.childKey, self.escapeCharacter);
+      queryString += 'LEFT OUTER JOIN ' + utils.escapeName(population.child, self.identifierCharacter) + ' AS ' + utils.escapeName('__'+population.alias, self.identifierCharacter) + ' ON ';
+      queryString += utils.escapeName(parentAlias, self.identifierCharacter) + '.' + utils.escapeName(population.parentKey, self.identifierCharacter);
+      queryString += ' = ' + utils.escapeName('__'+population.alias, self.identifierCharacter) + '.' + utils.escapeName(population.childKey, self.identifierCharacter);
 
       addSpace = true;
     }
@@ -139,6 +143,7 @@ WhereBuilder.prototype.single = function single(queryObject, options) {
     parameterized: this.parameterized,
     caseSensitive: this.caseSensitive,
     escapeCharacter: this.escapeCharacter,
+    identifierCharacter: this.identifierCharacter,
     wlNext: this.wlNext
   }, options);
 
@@ -204,6 +209,7 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
         parameterized: self.parameterized,
         caseSensitive: self.caseSensitive,
         escapeCharacter: self.escapeCharacter,
+        identifierCharacter: self.identifierCharacter,
         wlNext: self.wlNext
       }, options);
 
@@ -226,7 +232,7 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
       // Read the queryObject and get back a query string and params
       parsedCriteria = criteriaParser.read(population.criteria);
 
-      queryString = '(SELECT * FROM ' + utils.escapeName(population.child, self.escapeCharacter) + ' AS ' + utils.escapeName(populationAlias, self.escapeCharacter) + ' WHERE ' + utils.escapeName(population.childKey, self.escapeCharacter) + ' = ^?^ ';
+      queryString = '(SELECT * FROM ' + utils.escapeName(population.child, self.identifierCharacter) + ' AS ' + utils.escapeName(populationAlias, self.identifierCharacter) + ' WHERE ' + utils.escapeName(population.childKey, self.identifierCharacter) + ' = ^?^ ';
       if(parsedCriteria) {
 
         // If where criteria was used append an AND clause
@@ -261,6 +267,7 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
         parameterized: self.parameterized,
         caseSensitive: self.caseSensitive,
         escapeCharacter: self.escapeCharacter,
+        identifierCharacter: self.identifierCharacter,
         wlNext: self.wlNext
       }, options);
 
@@ -295,18 +302,18 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
       queryString += '(SELECT ';
       selectKeys.forEach(function(projection) {
         var projectionAlias = _.find(_.values(self.schema), {tableName: projection.table}).identity;
-        queryString += utils.escapeName(projectionAlias, self.escapeCharacter) + '.' + utils.escapeName(projection.key, self.escapeCharacter) + ',';
+        queryString += utils.escapeName(projectionAlias, self.identifierCharacter) + '.' + utils.escapeName(projection.key, self.identifierCharacter) + ',';
       });
 
       // Add an inner join to give us a key to select from
-      queryString += utils.escapeName(stage1.child, self.escapeCharacter) + '.' + utils.escapeName(stage1.childKey, self.escapeCharacter) + ' AS "___' + stage1.childKey + '"';
+      queryString += utils.escapeName(stage1.child, self.identifierCharacter) + '.' + utils.escapeName(stage1.childKey, self.identifierCharacter) + ' AS '+self.identifierCharacter+'___' + stage1.childKey + self.identifierCharacter;
 
-      queryString += ' FROM ' + utils.escapeName(stage2.child, self.escapeCharacter) + ' AS ' + utils.escapeName(stage2ChildAlias, self.escapeCharacter) + ' ';
-      queryString += ' INNER JOIN ' + utils.escapeName(stage1.child, self.escapeCharacter) + ' ON ' + utils.escapeName(stage2.parent, self.escapeCharacter);
-      queryString += '.' + utils.escapeName(stage2.parentKey, self.escapeCharacter) + ' = ' + utils.escapeName(stage2ChildAlias, self.escapeCharacter) + '.' + utils.escapeName(stage2.childKey, self.escapeCharacter);
-      queryString += ' WHERE ' + utils.escapeName(stage2ChildAlias, self.escapeCharacter) + '.' + utils.escapeName(stage2.childKey, self.escapeCharacter) + ' IN ';
-      queryString += '(SELECT ' + utils.escapeName(stage1.child, self.escapeCharacter) + '.' + utils.escapeName(stage2.parentKey, self.escapeCharacter) + ' FROM ';
-      queryString += utils.escapeName(stage1.child, self.escapeCharacter) + ' WHERE ' + utils.escapeName(stage1.child, self.escapeCharacter) + '.' + utils.escapeName(stage1.childKey, self.escapeCharacter);
+      queryString += ' FROM ' + utils.escapeName(stage2.child, self.identifierCharacter) + ' AS ' + utils.escapeName(stage2ChildAlias, self.identifierCharacter) + ' ';
+      queryString += ' INNER JOIN ' + utils.escapeName(stage1.child, self.identifierCharacter) + ' ON ' + utils.escapeName(stage2.parent, self.identifierCharacter);
+      queryString += '.' + utils.escapeName(stage2.parentKey, self.identifierCharacter) + ' = ' + utils.escapeName(stage2ChildAlias, self.identifierCharacter) + '.' + utils.escapeName(stage2.childKey, self.identifierCharacter);
+      queryString += ' WHERE ' + utils.escapeName(stage2ChildAlias, self.identifierCharacter) + '.' + utils.escapeName(stage2.childKey, self.identifierCharacter) + ' IN ';
+      queryString += '(SELECT ' + utils.escapeName(stage1.child, self.identifierCharacter) + '.' + utils.escapeName(stage2.parentKey, self.identifierCharacter) + ' FROM ';
+      queryString += utils.escapeName(stage1.child, self.identifierCharacter) + ' WHERE ' + utils.escapeName(stage1.child, self.identifierCharacter) + '.' + utils.escapeName(stage1.childKey, self.identifierCharacter);
       queryString +=  ' = ^?^ ) ';
 
       if(parsedCriteria) {

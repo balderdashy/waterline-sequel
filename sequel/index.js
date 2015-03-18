@@ -36,8 +36,11 @@ var Sequel = module.exports = function(schema, options) {
   // should use lower or regex logic for querying.
   this.caseSensitive = options && utils.object.hasOwnProperty(options, 'caseSensitive') ? options.caseSensitive : true;
 
-  // Set the escape character, default is "
-  this.escapeCharacter = options && utils.object.hasOwnProperty(options, 'escapeCharacter') ? options.escapeCharacter : '"';
+  // Set the escape character, default is '
+  this.escapeCharacter = options && utils.object.hasOwnProperty(options, 'escapeCharacter') ? options.escapeCharacter : '\'';
+
+  // Set the identifier character, default is `
+  this.identifierCharacter = options && utils.object.hasOwnProperty(options, 'identifierCharacter') ? options.identifierCharacter : '`';
 
   // Set if the database can return values from things such as an insert
   this.canReturnValues = options && utils.object.hasOwnProperty(options, 'canReturnValues') ? options.canReturnValues : false;
@@ -46,7 +49,7 @@ var Sequel = module.exports = function(schema, options) {
   this.escapeInserts = options && utils.object.hasOwnProperty(options, 'escapeInserts') ? options.escapeInserts : false;
 
   // Determine if aliased tablenames in DELETE queries need to be referenced before the FROM, e.g.
-  // DELETE `tableName` FROM `tableName` as `otherTableName` WHERE `otherTableName`.`foo` = "bar"
+  // DELETE `tableName` FROM `tableName` as `otherTableName` WHERE `otherTableName`.`foo` = 'bar'
   // MySQL and Oracle require this, but it doesn't work in Postgresql.
   this.declareDeleteAlias = options && utils.object.hasOwnProperty(options, 'declareDeleteAlias') ? options.declareDeleteAlias : true;
 
@@ -157,6 +160,7 @@ Sequel.prototype.create = function create(currentTable, data) {
   var options = {
     parameterized: this.parameterized,
     escapeCharacter: this.escapeCharacter,
+    identifierCharacter: this.identifierCharacter,
     escapeInserts: this.escapeInserts
   };
 
@@ -166,7 +170,7 @@ Sequel.prototype.create = function create(currentTable, data) {
   var paramValues = attributes.params.join(', ');
 
   // Build Query
-  var query = 'INSERT INTO ' + utils.escapeName(currentTable, this.escapeCharacter) + ' (' + columnNames + ') values (' + paramValues + ')';
+  var query = 'INSERT INTO ' + utils.escapeName(currentTable, this.identifierCharacter) + ' (' + columnNames + ') values (' + paramValues + ')';
 
   if(this.canReturnValues) {
     query += ' RETURNING *';
@@ -184,13 +188,14 @@ Sequel.prototype.update = function update(currentTable, queryObject, data) {
   var options = {
     parameterized: this.parameterized,
     escapeCharacter: this.escapeCharacter,
+    identifierCharacter: this.identifierCharacter,
     escapeInserts: this.escapeInserts
   };
 
   // Get the attribute identity (as opposed to the table name)
   var identity = _.find(_.values(this.schema), {tableName: currentTable}).identity;
   // Create the query with the tablename aliased as the identity (in case they are different)
-  var query = 'UPDATE ' + utils.escapeName(currentTable, this.escapeCharacter) + ' AS ' + utils.escapeName(identity, this.escapeCharacter) + ' ';
+  var query = 'UPDATE ' + utils.escapeName(currentTable, this.identifierCharacter) + ' AS ' + utils.escapeName(identity, this.identifierCharacter) + ' ';
 
   // Transform the Data object into arrays used in a parameterized query
   var attributes = utils.mapAttributes(data, options);
@@ -238,7 +243,7 @@ Sequel.prototype.destroy = function destroy(currentTable, queryObject) {
   // Get the attribute identity (as opposed to the table name)
   var identity = _.find(_.values(this.schema), {tableName: currentTable}).identity;
 
-  var query = 'DELETE ' + (this.declareDeleteAlias ? utils.escapeName(identity, this.escapeCharacter) : '') + ' FROM ' + utils.escapeName(currentTable, this.escapeCharacter) + ' AS ' + utils.escapeName(identity, this.escapeCharacter) + ' ';
+  var query = 'DELETE ' + (this.declareDeleteAlias ? utils.escapeName(identity, this.identifierCharacter) : '') + ' FROM ' + utils.escapeName(currentTable, this.identifierCharacter) + ' AS ' + utils.escapeName(identity, this.identifierCharacter) + ' ';
 
   // Build Criteria clause
   var whereObject = this.simpleWhere(currentTable, queryObject);
@@ -264,6 +269,7 @@ Sequel.prototype.destroy = function destroy(currentTable, queryObject) {
 Sequel.prototype.select = function select(currentTable, queryObject) {
   var options = {
     escapeCharacter: this.escapeCharacter,
+    identifierCharacter: this.identifierCharacter,
     caseSensitive: this.caseSensitive,
     cast: this.cast,
     wlNext: this.wlNext
@@ -281,6 +287,7 @@ Sequel.prototype.simpleWhere = function simpleWhere(currentTable, queryObject, o
     parameterized: this.parameterized,
     caseSensitive: this.caseSensitive,
     escapeCharacter: this.escapeCharacter,
+    identifierCharacter: this.identifierCharacter,
     wlNext: this.wlNext
   };
 
@@ -292,7 +299,8 @@ Sequel.prototype.complexWhere = function complexWhere(currentTable, queryObject,
   var _options = {
     parameterized: this.parameterized,
     caseSensitive: this.caseSensitive,
-    escapeCharacter: this.escapeCharacter
+    escapeCharacter: this.escapeCharacter,
+    identifierCharacter: this.identifierCharacter
   };
 
   var where = new WhereBuilder(this.schema, currentTable, _options);

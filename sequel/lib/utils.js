@@ -30,6 +30,25 @@ utils.object.hasOwnProperty = function(obj, prop) {
 
 
 /**
+ * String literal helper function
+ *
+ * Pass in a value and have it wrapped in a string literal.
+ * Saves having self.escapeCharacter littered everywhere
+ *
+ * @param {String} val
+ * @param {String} escapeCharacter
+ * @return {String}
+ * @api public
+ *
+ */
+
+utils.stringLiteral = function stringLiteral(val, escapeCharacter) {
+  var regex = new RegExp(escapeCharacter, 'g');
+  return escapeCharacter+val.replace(regex, '\\'+escapeCharacter)+escapeCharacter;
+}
+
+
+/**
  * Escape Name
  *
  * Wraps a name in quotes to allow reserved
@@ -60,13 +79,16 @@ utils.mapAttributes = function(data, options) {
   var parameterized = options && utils.object.hasOwnProperty(options, 'parameterized') ? options.parameterized : true;
 
   // Get the escape character
-  var escapeCharacter = options && utils.object.hasOwnProperty(options, 'escapeCharacter') ? options.escapeCharacter : '"';
+  var escapeCharacter = options && utils.object.hasOwnProperty(options, 'escapeCharacter') ? options.escapeCharacter : '\'';
+
+  // Get the identifier character
+  var identifierCharacter = options && utils.object.hasOwnProperty(options, 'identifierCharacter') ? options.identifierCharacter : '`';
 
   // Determine if we should escape the inserted characters
   var escapeInserts = options && utils.object.hasOwnProperty(options, 'escapeInserts') ? options.escapeInserts : false;
 
   Object.keys(data).forEach(function(key) {
-    var k = escapeInserts ? (options.escapeCharacter + key + options.escapeCharacter) : key;
+    var k = escapeInserts ? (options.identifierCharacter + key + options.identifierCharacter) : key;
     keys.push(k);
 
     var value = utils.prepareValue(data[key]);

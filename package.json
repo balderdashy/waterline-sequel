@@ -16,6 +16,7 @@
     "async": "^0.9.0",
     "chai": "^2.1.1",
     "mocha": "^2.2.1",
+    "npm": "^2.7.4",
     "sails-mysql": "git://github.com/balderdashy/sails-mysql",
     "sails-postgresql": "git://github.com/balderdashy/sails-postgresql",
     "should": "^5.2.0",

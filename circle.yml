@@ -1,0 +1,15 @@
+machine:
+  services:
+    - postgresql
+    - mysq
+  node:
+    version: 0.10
+  environment:
+    DB_USER: ubuntu
+    DB_PASS: ''
+test:
+  pre:
+    - psql -c 'create database sailspg;' -U postgres
+    - mysql -e 'create database sails_mysql;'
+  override:
+    - make test-integration

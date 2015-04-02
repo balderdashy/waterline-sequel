@@ -3,3 +3,13 @@ language: node_js
 node_js:
   - 0.10
   - 0.11
+services: 
+  - postgresql
+  - mysql
+addons:
+  postgresql: "9.3"
+env:
+  - DB_USER=postgres DB_PASS=''
+before_script:
+  - psql -c 'create database sailspg;' -U postgres
+  - mysql -e 'create database sails_mysql;'

@@ -13,12 +13,19 @@
     "lodash": "~2.4.1"
   },
   "devDependencies": {
+    "async": "^0.9.0",
     "chai": "^2.1.1",
+    "jpath": "^0.0.20",
     "mocha": "^2.2.1",
-    "should": "^5.2.0"
+    "npm": "^2.7.4",
+    "sails-mysql": "git://github.com/balderdashy/sails-mysql",
+    "sails-postgresql": "git://github.com/balderdashy/sails-postgresql",
+    "should": "^5.2.0",
+    "waterline-adapter-tests": "^0.10.8"
   },
   "scripts": {
-    "test": "./node_modules/mocha/bin/mocha -b"
+    "test": "make test",
+    "test-integration": "make test-integration"
   },
   "main": "sequel/index",
   "directories": {

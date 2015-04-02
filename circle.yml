@@ -2,8 +2,6 @@ machine:
   services:
     - postgresql
     - mysql
-  node:
-    version: 0.10
   environment:
     DB_USER: ubuntu
     DB_PASS: ''

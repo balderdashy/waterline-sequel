@@ -1,6 +1,6 @@
 Integration tests
 ==========================
-[![Build Status](https://travis-ci.org/balderdashy/waterline-sequel.svg?branch=master)](https://travis-ci.org/balderdashy/waterline-sequel)
+[![Circle CI](https://img.shields.io/circleci/project/balderdashy/waterline-sequel/master.svg?style=shield)](https://circleci.com/gh/balderdashy/waterline-sequel/tree/master)
 
 A set of integration tests that test the SQL official adapters against waterline-sequel edge version: [example](https://travis-ci.org/balderdashy/waterline-sequel/jobs/56144647#L404).
 

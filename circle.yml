@@ -1,3 +1,6 @@
+dependencies:
+  pre:
+    - npm update
 machine:
   services:
     - postgresql

@@ -486,11 +486,15 @@ CriteriaProcessor.prototype.processObject = function processObject (tableName, p
         parentType = currentSchema[parent].type || currentSchema[parent]
       }
 
-      lower = parentType && sensitiveTypes.indexOf(parentType) > -1;
+      lower = !sensitive && _.isString(obj[key]) && lower && parentType && sensitiveTypes.indexOf(parentType) > -1;
+
+      if (lower) {
+        obj[key] = obj[key].toLowerCase();
+      }
 
       // Check if value is a string and if so add LOWER logic
       // to work with case in-sensitive queries
-      self.queryString += self.buildParam(self.getTableAlias(), parent, !sensitive && _.isString(obj[key]) && lower) + ' ';
+      self.queryString += self.buildParam(self.getTableAlias(), parent, lower) + ' ';
       self.prepareCriterion(key, obj[key]);
       self.queryString += ' AND ';
     });

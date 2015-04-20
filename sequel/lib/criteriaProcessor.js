@@ -463,7 +463,7 @@ CriteriaProcessor.prototype.processObject = function processObject (tableName, p
   this.queryString = this.queryString.slice(0, -4);
 
   // Expand criteria object
-  function expandCriteria(obj) {
+  function expandCriteria (obj) {
     var isChild = self.isChild(parent),
         sensitiveTypes = ['text', 'string'], // haha, "sensitive types". "I'll watch 'the notebook' with you, babe."
         lower;
@@ -487,6 +487,10 @@ CriteriaProcessor.prototype.processObject = function processObject (tableName, p
       }
 
       lower = parentType && sensitiveTypes.indexOf(parentType) > -1;
+
+      if (!sensitive && _.isString(obj[key]) && lower) {
+        obj[key] = obj[key].toLowerCase();
+      }
 
       // Check if value is a string and if so add LOWER logic
       // to work with case in-sensitive queries

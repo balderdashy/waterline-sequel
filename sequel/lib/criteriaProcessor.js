@@ -374,9 +374,6 @@ CriteriaProcessor.prototype.buildParam = function buildParam (tableName, propert
  * @returns {boolean}
  */
 CriteriaProcessor.prototype.isChild = function isChild (child) {
-  // if (child === 'bar') {
-  //  console.log(this.currentSchema, 'nu de child', child);
-  // }
   return typeof this.currentSchema[child] === 'object' && this.currentSchema[child].foreignKey;
 };
 

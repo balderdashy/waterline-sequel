@@ -374,6 +374,9 @@ CriteriaProcessor.prototype.buildParam = function buildParam (tableName, propert
  * @returns {boolean}
  */
 CriteriaProcessor.prototype.isChild = function isChild (child) {
+  // if (child === 'bar') {
+  //  console.log(this.currentSchema, 'nu de child', child);
+  // }
   return typeof this.currentSchema[child] === 'object' && this.currentSchema[child].foreignKey;
 };
 
@@ -428,12 +431,7 @@ CriteriaProcessor.prototype.processSimple = function processSimple (tableName, p
   }
 
   if(_.isDate(value)) {
-    value = value.getFullYear() + '-' +
-    ('00' + (value.getMonth()+1)).slice(-2) + '-' +
-    ('00' + value.getDate()).slice(-2) + ' ' +
-    ('00' + value.getHours()).slice(-2) + ':' +
-    ('00' + value.getMinutes()).slice(-2) + ':' +
-    ('00' + value.getSeconds()).slice(-2);
+    value = value.toUTCString();
   }
 
   if (_.isString(value)) {
@@ -539,14 +537,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
 
   // Check value for a date type
   if(_.isDate(value)) {
-    value = value.getFullYear() + '-' +
-      ('00' + (value.getMonth()+1)).slice(-2) + '-' +
-      ('00' + value.getDate()).slice(-2) + ' ' +
-      ('00' + value.getHours()).slice(-2) + ':' +
-      ('00' + value.getMinutes()).slice(-2) + ':' +
-      ('00' + value.getSeconds()).slice(-2);
-
-    value = '"' + value + '"';
+    value       = '"' + value.toUTCString() + '"';
     escapedDate = true;
   }
 

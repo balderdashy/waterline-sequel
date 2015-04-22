@@ -120,5 +120,44 @@ module.exports = {
         onKey     : "id"
       }
     }
+  },
+  oddity: {
+    connection: ["mysqlServer"],
+    identity  : "oddity",
+    tableName : "oddity",
+    migrate   : "safe",
+    attributes: {
+      meta    : "string",
+      id      : {
+        type         : "integer",
+        autoIncrement: true,
+        primaryKey   : true,
+        unique       : true
+      },
+      createdAt: {
+        type   : "datetime",
+        default: "NOW"
+      },
+      updatedAt: {
+        type   : "datetime",
+        default: "NOW"
+      },
+      bar      : {
+        columnName: "stubborn",
+        type      : "integer",
+        foreignKey: true,
+        references: "bar",
+        on        : "id",
+        onKey     : "id"
+      },
+      bat      : {
+        columnName: "bat",
+        type      : "integer",
+        foreignKey: true,
+        references: "bat",
+        on        : "id",
+        onKey     : "id"
+      }
+    }
   }
 };

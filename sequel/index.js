@@ -91,8 +91,8 @@ Sequel.prototype.find = function find(currentTable, queryObject) {
 
   whereObject = this.simpleWhere(currentTable, queryObject);
 
-  this.queries[0] += ' ' + whereObject.query;
-  this.values[0] = whereObject.values;
+  this.queries[0] += ' ' + (whereObject.query ? whereObject.query : '');
+  if (whereObject.values) this.values[0] = whereObject.values;
 
   /**
    * Step 3 - Build out the child query templates.
@@ -130,8 +130,8 @@ Sequel.prototype.count = function count(currentTable, queryObject) {
 
   whereObject = this.simpleWhere(currentTable, queryObject);
 
-  this.queries[0] += ' ' + whereObject.query;
-  this.values[0] = whereObject.values;
+  this.queries[0] += ' ' + (whereObject.query ? whereObject.query : '');
+  if (whereObject.values) this.values[0] = whereObject.values;
 
   /**
    * Step 3 - Build out the child query templates.

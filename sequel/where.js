@@ -79,7 +79,10 @@ var WhereBuilder = module.exports = function WhereBuilder(schema, currentTable, 
 
 WhereBuilder.prototype.single = function single(queryObject, options) {
 
-  if(!queryObject) return '';
+  if(!queryObject) return {
+	query: '',
+	values: []
+  };
 
   var self = this;
   var queryString = '';

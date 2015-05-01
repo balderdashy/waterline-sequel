@@ -15,7 +15,7 @@ var hop = utils.object.hasOwnProperty;
 var SelectBuilder = module.exports = function(schema, currentTable, queryObject, options) {
 
   this.schema = schema;
-  this.currentTable = _.find(_.values(schema), {tableName: currentTable}).identity;
+  this.currentTable = currentTable;
   this.escapeCharacter = '"';
   this.cast = false;
   this.wlNext = {};
@@ -82,7 +82,7 @@ SelectBuilder.prototype.buildSimpleSelect = function buildSimpleSelect(queryObje
     var population = queryObject.instructions[attr].instructions[0];
 
     // Handle hasFK
-    var childAlias = _.find(_.values(self.schema), {tableName: population.child}).identity;
+    var childAlias = _.find(_.values(self.schema), {tableName: population.child}).tableName;
 
     _.keys(self.schema[childAlias].attributes).forEach(function(key) {
       var schema = self.schema[childAlias].attributes[key];

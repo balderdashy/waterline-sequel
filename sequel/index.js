@@ -188,7 +188,7 @@ Sequel.prototype.update = function update(currentTable, queryObject, data) {
   };
 
   // Get the attribute identity (as opposed to the table name)
-  var identity = _.find(_.values(this.schema), {tableName: currentTable}).identity;
+  var identity = currentTable;
   // Create the query with the tablename aliased as the identity (in case they are different)
   var query = 'UPDATE ' + utils.escapeName(currentTable, this.escapeCharacter) + ' AS ' + utils.escapeName(identity, this.escapeCharacter) + ' ';
 
@@ -236,7 +236,7 @@ Sequel.prototype.update = function update(currentTable, queryObject, data) {
 Sequel.prototype.destroy = function destroy(currentTable, queryObject) {
 
   // Get the attribute identity (as opposed to the table name)
-  var identity = _.find(_.values(this.schema), {tableName: currentTable}).identity;
+  var identity = currentTable;
 
   var query = 'DELETE ' + (this.declareDeleteAlias ? utils.escapeName(identity, this.escapeCharacter) : '') + ' FROM ' + utils.escapeName(currentTable, this.escapeCharacter) + ' AS ' + utils.escapeName(identity, this.escapeCharacter) + ' ';
 

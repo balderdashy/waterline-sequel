@@ -230,7 +230,48 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
       // Read the queryObject and get back a query string and params
       parsedCriteria = criteriaParser.read(population.criteria);
 
-      queryString = '(SELECT * FROM ' + utils.escapeName(population.child, self.escapeCharacter) + ' AS ' + utils.escapeName(populationAlias, self.escapeCharacter) + ' WHERE ' + utils.escapeName(population.childKey, self.escapeCharacter) + ' = ^?^ ';
+      // Store the model keys here
+      var selectKeys = [];
+
+      // String for selected columns
+      var selectColumns = "";
+
+      // Check if the select attribute exists and we have anything in it
+      if(population.criteria.select && population.criteria.select.length != 0) {
+        // Most of the functionality inside this conditional is based of select.js with minor changes
+
+        var attributes = population.criteria.select;
+
+        attributes.forEach(function(key) {
+          var schema = self.schema[population.child].attributes[key] || {};
+          if(hop(schema, 'collection')) return;
+            selectKeys.push({ table: population.child, key: schema.columnName || key });
+          });
+
+          selectKeys.forEach(function(select) {
+            // If there is an alias, set it in the select (used for hasFK associations)
+            if(select.alias) {
+              selectColumns += utils.escapeName(select.table, self.escapeCharacter) + '.' + utils.escapeName(select.key, self.escapeCharacter) + ' AS ' + self.escapeCharacter + select.alias + '___' + select.key + self.escapeCharacter + ', ';
+            }
+            else {
+              selectColumns += utils.escapeName(select.table, self.escapeCharacter) + '.' + utils.escapeName(select.key, self.escapeCharacter) + ', ';
+            }
+          });
+
+          // Remove the last comma
+          selectColumns = selectColumns.slice(0, -2);
+
+      } else {
+          // Select everything if there are no select attributes
+          // If we actually have the attribute but the array is empty,
+          // we will assume that we want everything
+          selectColumns = "*";
+      }
+
+      queryString += selectColumns;
+
+      queryString += ' FROM ' + utils.escapeName(population.child, self.escapeCharacter) + ' AS ' + utils.escapeName(populationAlias, self.escapeCharacter) + ' WHERE ' + utils.escapeName(population.childKey, self.escapeCharacter) + ' = ^?^ ';
+
       if(parsedCriteria) {
 
         // If where criteria was used append an AND clause

@@ -104,8 +104,16 @@ SelectBuilder.prototype.buildSimpleSelect = function buildSimpleSelect(queryObje
 
   });
 
-  // Remove the last comma
-  query = query.slice(0, -2) + ' FROM ' + tableName + ' AS ' + utils.escapeName(self.currentTable, self.escapeCharacter) + ' ';
+  // Check if we have any selected columns,
+  // select everything if we don't
+  if(selectKeys.length != 0) {
+  	// Remove the last comma
+    query = query.slice(0, -2);
+  } else {
+    query += "*";
+  }
+
+  query += ' FROM ' + tableName + ' AS ' + utils.escapeName(self.currentTable, self.escapeCharacter) + ' ';
 
   return query;
 };

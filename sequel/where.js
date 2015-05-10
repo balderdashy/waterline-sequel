@@ -189,7 +189,7 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
 
   _.keys(queryObject.instructions).forEach(function(attr) {
 
-    var queryString = '';
+    var queryString = '(SELECT ';
     var criteriaParser;
     var parsedCriteria;
     var childPK;
@@ -245,33 +245,31 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
         attributes.forEach(function(key) {
           var schema = self.schema[population.child].attributes[key] || {};
           if(hop(schema, 'collection')) return;
-            selectKeys.push({ table: population.child, key: schema.columnName || key });
-          });
+          selectKeys.push({ table: population.child, key: schema.columnName || key });
+        });
 
-          selectKeys.forEach(function(select) {
-            // If there is an alias, set it in the select (used for hasFK associations)
-            if(select.alias) {
-              selectColumns += utils.escapeName(select.table, self.escapeCharacter) + '.' + utils.escapeName(select.key, self.escapeCharacter) + ' AS ' + self.escapeCharacter + select.alias + '___' + select.key + self.escapeCharacter + ', ';
-            }
-            else {
-              selectColumns += utils.escapeName(select.table, self.escapeCharacter) + '.' + utils.escapeName(select.key, self.escapeCharacter) + ', ';
-            }
-          });
+        selectKeys.forEach(function(select) {
+          // If there is an alias, set it in the select (used for hasFK associations)
+          if(select.alias) {
+            selectColumns += utils.escapeName(select.table, self.escapeCharacter) + '.' + utils.escapeName(select.key, self.escapeCharacter) + ' AS ' + self.escapeCharacter + select.alias + '___' + select.key + self.escapeCharacter + ', ';
+          }
+          else {
+            selectColumns += utils.escapeName(select.table, self.escapeCharacter) + '.' + utils.escapeName(select.key, self.escapeCharacter) + ', ';
+          }
+        });
 
-          // Remove the last comma
-          selectColumns = selectColumns.slice(0, -2);
-
+        // Remove the last comma
+        selectColumns = selectColumns.slice(0, -2);
       } else {
-          // Select everything if there are no select attributes
-          // If we actually have the attribute but the array is empty,
-          // we will assume that we want everything
-          selectColumns = "*";
+        // Select everything if there are no select attributes
+        // If we actually have the attribute but the array is empty,
+        // we will assume that we want everything
+        selectColumns = '*';
       }
-
       queryString += selectColumns;
 
       queryString += ' FROM ' + utils.escapeName(population.child, self.escapeCharacter) + ' AS ' + utils.escapeName(populationAlias, self.escapeCharacter) + ' WHERE ' + utils.escapeName(population.childKey, self.escapeCharacter) + ' = ^?^ ';
-
+      
       if(parsedCriteria) {
 
         // If where criteria was used append an AND clause

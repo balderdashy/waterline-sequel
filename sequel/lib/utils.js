@@ -28,6 +28,17 @@ utils.object.hasOwnProperty = function(obj, prop) {
   return hop.call(obj, prop);
 };
 
+/**
+ * Utility that helps you find a schema. Useful when identifier and table name differ.
+ *
+ * @param {Object}  schema
+ * @param {String}  tableName
+ *
+ * @returns {Object}
+ */
+utils.findSchema = function (schema, tableName) {
+  return schema[tableName] || schema[_.findKey(schema, {tableName: tableName})];
+};
 
 /**
  * Escape Name

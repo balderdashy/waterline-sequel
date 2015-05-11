@@ -13,9 +13,9 @@ var hop = utils.object.hasOwnProperty;
  */
 
 var SelectBuilder = module.exports = function(schema, currentTable, queryObject, options) {
-
   this.schema = schema;
-  this.currentTable = currentTable;
+  this.currentTable = utils.findSchema(schema, currentTable).identity;
+  this.currentSchema = schema[this.currentTable];
   this.escapeCharacter = '"';
   this.cast = false;
   this.wlNext = {};
@@ -56,19 +56,19 @@ SelectBuilder.prototype.buildSimpleSelect = function buildSimpleSelect(queryObje
   }
 
   // Escape table name
-  var tableName = utils.escapeName(self.schema[self.currentTable].tableName, self.escapeCharacter);
+  var tableName = utils.escapeName(self.currentSchema.tableName, self.escapeCharacter);
 
   var selectKeys = [];
   var query = 'SELECT ';
 
-  var attributes = queryObject.select || Object.keys(this.schema[this.currentTable].attributes);
+  var attributes = queryObject.select || Object.keys(this.currentSchema.attributes);
   delete queryObject.select;
 
   attributes.forEach(function(key) {
     // Default schema to {} in case a raw DB column name is sent.  This shouldn't happen
     // after https://github.com/balderdashy/waterline/commit/687c869ad54f499018ab0b038d3de4435c96d1dd
     // but leaving here as a failsafe.
-    var schema = self.schema[self.currentTable].attributes[key] || {};
+    var schema = self.currentSchema.attributes[key] || {};
     if(hop(schema, 'collection')) return;
     selectKeys.push({ table: self.currentTable, key: schema.columnName || key });
   });
@@ -82,7 +82,7 @@ SelectBuilder.prototype.buildSimpleSelect = function buildSimpleSelect(queryObje
     var population = queryObject.instructions[attr].instructions[0];
 
     // Handle hasFK
-    var childAlias = _.find(_.values(self.schema), {tableName: population.child}).tableName;
+    var childAlias = utils.findSchema(self.schema, population.child).identity;
 
     _.keys(self.schema[childAlias].attributes).forEach(function(key) {
       var schema = self.schema[childAlias].attributes[key];

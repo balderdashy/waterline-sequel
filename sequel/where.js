@@ -48,7 +48,7 @@ var hop = utils.object.hasOwnProperty;
 var WhereBuilder = module.exports = function WhereBuilder(schema, currentTable, options) {
 
   this.schema = schema;
-  this.currentTable = currentTable;
+  this.currentTable = utils.findSchema(schema, currentTable).identity;
 
   this.wlNext = {};
 
@@ -95,7 +95,7 @@ WhereBuilder.prototype.single = function single(queryObject, options) {
     var population = queryObject.instructions[attr].instructions[0];
     var alias = utils.escapeName(utils.populationAlias(population.alias), self.escapeCharacter);
 
-    var parentAlias = _.find(_.values(self.schema), {tableName: population.parent}).tableName;
+    var parentAlias = utils.findSchema(self.schema, population.parent).identity;
     // Handle hasFK
     if(strategy === 1) {
 
@@ -201,7 +201,8 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
     if(strategy === 2) {
 
       var population = queryObject.instructions[attr].instructions[0];
-      var populationAlias = _.find(_.values(self.schema), {tableName: population.child}).tableName;
+      var populationAlias = utils.findSchema(self.schema, population.child).identity;
+
 
       // Mixin the parameterized flag into options
       _options = _.assign({
@@ -257,8 +258,8 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
 
       var stage1 = queryObject.instructions[attr].instructions[0];
       var stage2 = queryObject.instructions[attr].instructions[1];
-      stage1ChildAlias = _.find(_.values(self.schema), {tableName: stage1.child}).tableName;
-      stage2ChildAlias = _.find(_.values(self.schema), {tableName: stage2.child}).tableName;
+      stage1ChildAlias = utils.findSchema(self.schema, stage1.child).identity;
+      stage2ChildAlias = utils.findSchema(self.schema, stage2.child).identity;
 
       // Mixin the parameterized flag into options
       _options = _.assign({
@@ -298,7 +299,7 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
 
       queryString += '(SELECT ';
       selectKeys.forEach(function(projection) {
-        var projectionAlias = _.find(_.values(self.schema), {tableName: projection.table}).tableName;
+        var projectionAlias = utils.findSchema(self.schema, projection.table).identity;
         queryString += utils.escapeName(projectionAlias, self.escapeCharacter) + '.' + utils.escapeName(projection.key, self.escapeCharacter) + ',';
       });
 

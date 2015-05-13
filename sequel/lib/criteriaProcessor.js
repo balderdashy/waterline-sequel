@@ -839,11 +839,13 @@ CriteriaProcessor.prototype.skip = function(options) {
  */
 
 CriteriaProcessor.prototype.sort = function(options) {
+  var keys = Object.keys(options);
+  if (!keys.length) { return; }
+  
   var self = this;
-
   this.queryString += ' ORDER BY ';
 
-  Object.keys(options).forEach(function(key) {
+  keys.forEach(function(key) {
     var direction = options[key] === 1 ? 'ASC' : 'DESC';
     self.queryString += utils.escapeName(self.currentTable, self.escapeCharacter) + '.' + utils.escapeName(key, self.escapeCharacter) + ' ' + direction + ', ';
   });

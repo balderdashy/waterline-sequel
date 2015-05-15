@@ -1,7 +1,7 @@
 module.exports = {
 
   // A description. This is used for display in the test output.
-  description: 'Should construct a simple select query with a sort clause',
+  description: 'Should construct a simple select query with an empty sort clause',
 
   // The name of the table this query should be ran against.
   table      : 'foo',

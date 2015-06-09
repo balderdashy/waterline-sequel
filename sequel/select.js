@@ -15,6 +15,7 @@ var hop = utils.object.hasOwnProperty;
 var SelectBuilder = module.exports = function(schema, currentTable, queryObject, options) {
 
   this.schema = schema;
+  this.currentSchema = schema[currentTable].attributes;
   this.currentTable = currentTable;
   this.escapeCharacter = '"';
   this.cast = false;
@@ -135,25 +136,16 @@ SelectBuilder.prototype.processAggregates = function processAggregates(criteria)
 
   // Append groupBy columns to select statement
   if(criteria.groupBy) {
-    if(Array.isArray(criteria.groupBy)) {
-      criteria.groupBy.forEach(function(opt) {
-        query += tableName + '.' + utils.escapeName(opt, self.escapeCharacter) + ', ';
-      });
+    if(!Array.isArray(criteria.groupBy)) criteria.groupBy = [criteria.groupBy];
 
-    } else {
-      query += tableName + '.' + utils.escapeName(criteria.groupBy, self.escapeCharacter) + ', ';
-    }
-  }
-  
-  // Append groupByDate columns to select statement
-  if(criteria.groupByDate) {
-    query += 'to_char('
-          + tableName
-          + '.'
-          + utils.escapeName(criteria.groupByDate.column, self.escapeCharacter)
-          + ", '"
-          + criteria.groupByDate.format
-          + "'), ";
+    criteria.groupBy.forEach(function(key, index) {
+      // Check whether we are grouping by a column or an expression.
+      if (_.includes(_.keys(self.currentSchema), key)) {
+        query += tableName + '.' + utils.escapeName(key, self.escapeCharacter) + ', ';
+      } else {
+        query += key + ' as group' + index + ', ';
+      }
+    });
   }
 
   // Handle SUM

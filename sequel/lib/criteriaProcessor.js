@@ -105,7 +105,6 @@ CriteriaProcessor.prototype.read = function read(options) {
   this.queryString = this.queryString.slice(0, -4);
 
   if(options.groupBy) this.group(options.groupBy);
-  if(options.groupByDate) this.groupByDate(options.groupByDate);
   if(options.sort) this.sort(options.sort);
   if(hop(options, 'limit')) this.limit(options.limit);
 
@@ -868,22 +867,14 @@ CriteriaProcessor.prototype.group = function(options) {
   if(!Array.isArray(options)) options = [options];
 
   options.forEach(function(key) {
-    self.queryString += utils.escapeName(self.currentTable, self.escapeCharacter) + '.' + utils.escapeName(key, self.escapeCharacter) + ', ';
+    // Check whether we are grouping by a column or an expression.
+    if (_.includes(_.keys(self.currentSchema), key)) {
+      self.queryString += utils.escapeName(self.currentTable, self.escapeCharacter) + '.' + utils.escapeName(key, self.escapeCharacter) + ', ';
+    } else {
+      self.queryString += key + ', ';
+    }
   });
 
   // Remove trailing comma
   this.queryString = this.queryString.slice(0, -2);
-};
-
-/**
- * Specify a `group by` condition that allows for date formatting
- */
-CriteriaProcessor.prototype.groupByDate = function(options) {
-  this.queryString += ' GROUP BY to_char('
-                   + utils.escapeName(this.currentTable, this.escapeCharacter)
-                   + '.'
-                   + utils.escapeName(options.column, this.escapeCharacter)
-                   + ", '"
-                   + options.format
-                   + "')";
 };

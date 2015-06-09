@@ -144,6 +144,11 @@ SelectBuilder.prototype.processAggregates = function processAggregates(criteria)
       query += tableName + '.' + utils.escapeName(criteria.groupBy, self.escapeCharacter) + ', ';
     }
   }
+  
+  // Append groupByDate columns to select statement
+  if(criteria.groupByDate) {
+    
+  }
 
   // Handle SUM
   if (criteria.sum) {

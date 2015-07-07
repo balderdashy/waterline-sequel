@@ -150,7 +150,7 @@ CriteriaProcessor.prototype.expand = function expand(key, val) {
     default:
 
       // `IN`
-      if(val instanceof Array) {
+      if(Array.isArray(val)) {
         self._in(key, val);
         return;
       }

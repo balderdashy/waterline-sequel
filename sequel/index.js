@@ -114,10 +114,13 @@ Sequel.prototype.find = function find(currentTable, queryObject) {
 
 Sequel.prototype.count = function count(currentTable, queryObject) {
 
+  // Escape table name
+  var tableName = utils.escapeName(this.schema[currentTable].tableName, this.escapeCharacter);
+
   // Step 1:
   // Build out the Count statements
   // TO-DO: limit this to a certain column, e.g. id, for performance gains
-  this.queries = ['SELECT COUNT(*) FROM ' + currentTable];
+  this.queries = ['SELECT COUNT(*) FROM ' + tableName];
 
   var whereObject;
   var childQueries;

@@ -30,7 +30,7 @@ var SelectBuilder = module.exports = function(schema, currentTable, queryObject,
 
   // Add support for WLNext features
   if(options && hop(options, 'wlNext')) {
-    this.wlNext = options.wlNext
+    this.wlNext = options.wlNext;
   }
 
   var queries = [];

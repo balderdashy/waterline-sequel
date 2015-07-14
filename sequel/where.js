@@ -125,8 +125,10 @@ WhereBuilder.prototype.single = function single(queryObject, options) {
       childPK = expandedAttr.columnName || attr;
     });
 
-    queryObject.sort = {};
-    queryObject.sort[childPK] = -1;
+    if (childPK) {
+      queryObject.sort = {};
+      queryObject.sort[childPK] = -1;
+    }
   }
 
   // Read the queryObject and get back a query string and params

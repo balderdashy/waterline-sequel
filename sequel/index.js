@@ -139,6 +139,13 @@ Sequel.prototype.count = function count(currentTable, queryObject) {
   this.queries[0] += '(SELECT * FROM ' + tableName + ' ' + whereObject.query + ') AS ' + tableName;
   this.values[0] = whereObject.values;
 
+  /**
+   * Step 3 - Build out the child query templates.
+   */
+
+  childQueries = this.complexWhere(currentTable, queryObject);
+  this.queries = this.queries.concat(childQueries);
+
   return {
     query: this.queries,
     values: this.values

@@ -84,6 +84,8 @@ utils.mapAttributes = function(data, options) {
   // Determine if we should escape the inserted characters
   var escapeInserts = options && utils.object.hasOwnProperty(options, 'escapeInserts') ? options.escapeInserts : false;
 
+  var paramCharacter = options && utils.object.hasOwnProperty(options, 'paramCharacter') ? options.paramCharacter : '$';
+
   Object.keys(data).forEach(function(key) {
     var k = escapeInserts ? (options.escapeCharacter + key + options.escapeCharacter) : key;
     keys.push(k);
@@ -93,7 +95,7 @@ utils.mapAttributes = function(data, options) {
     values.push(value);
 
     if(parameterized) {
-      params.push('$' + i);
+      params.push(paramCharacter + i);
     }
     else {
       if(value === null || value === undefined) {

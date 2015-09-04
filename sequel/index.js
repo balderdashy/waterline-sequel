@@ -27,6 +27,9 @@ var Sequel = module.exports = function(schema, options) {
   // Default is true.
   this.parameterized = options && utils.object.hasOwnProperty(options, 'parameterized') ? options.parameterized : true;
 
+  // leading character for parameter vars (ie $1, $2 or :1, :2)
+  this.paramCharacter = options && utils.object.hasOwnProperty(options, 'paramCharacter') ? options.paramCharacter : '$';
+
   // Flag if things should be cast, useful for averages
   this.cast = options && utils.object.hasOwnProperty(options, 'casting') ? options.casting : false;
 
@@ -180,7 +183,8 @@ Sequel.prototype.create = function create(currentTable, data) {
   var options = {
     parameterized: this.parameterized,
     escapeCharacter: this.escapeCharacter,
-    escapeInserts: this.escapeInserts
+    escapeInserts: this.escapeInserts,
+    paramCharacter: this.paramCharacter
   };
 
   // Transform the Data object into arrays used in a parameterized query
@@ -308,6 +312,7 @@ Sequel.prototype.simpleWhere = function simpleWhere(currentTable, queryObject, o
     parameterized: this.parameterized,
     caseSensitive: this.caseSensitive,
     escapeCharacter: this.escapeCharacter,
+    paramCharacter: this.paramCharacter,
     explicitTableAs: this.explicitTableAs,
     prefixAlias: this.prefixAlias,
     stringDelimiter: this.stringDelimiter,
@@ -323,6 +328,7 @@ Sequel.prototype.complexWhere = function complexWhere(currentTable, queryObject,
     parameterized: this.parameterized,
     caseSensitive: this.caseSensitive,
     escapeCharacter: this.escapeCharacter,
+    paramCharacter: this.paramCharacter,
     explicitTableAs: this.explicitTableAs,
     prefixAlias: this.prefixAlias,
     stringDelimiter: this.stringDelimiter,

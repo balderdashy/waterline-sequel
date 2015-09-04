@@ -51,6 +51,7 @@ var WhereBuilder = module.exports = function WhereBuilder(schema, currentTable, 
   this.prefixAlias = "__";
   this.tableAs = " AS ";
   this.stringDelimiter = '"';
+  this.paramCharacter = '$';
   this.currentTable = currentTable;
 
   this.wlNext = {};
@@ -83,6 +84,10 @@ var WhereBuilder = module.exports = function WhereBuilder(schema, currentTable, 
 
   if (options && hop(options, 'rownum')) {
       this.rownum = options.rownum;
+  }
+
+  if (options && hop(options, 'paramCharacter')) {
+      this.paramCharacter = options.paramCharacter;
   }
 
   // Add support for WL Next features
@@ -164,6 +169,7 @@ WhereBuilder.prototype.single = function single(queryObject, options) {
     parameterized: this.parameterized,
     caseSensitive: this.caseSensitive,
     escapeCharacter: this.escapeCharacter,
+    paramCharacter: this.paramCharacter,
     stringDelimiter: this.stringDelimiter,
 	rownum: this.rownum,
     wlNext: this.wlNext
@@ -230,6 +236,7 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
       _options = _.assign({
         parameterized: self.parameterized,
         caseSensitive: self.caseSensitive,
+        paramCharacter: self.paramCharacter,
         escapeCharacter: self.escapeCharacter,
         wlNext: self.wlNext
       }, options);
@@ -307,6 +314,7 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
       _options = _.assign({
         parameterized: self.parameterized,
         caseSensitive: self.caseSensitive,
+        paramCharacter: self.paramCharacter,
         escapeCharacter: self.escapeCharacter,
         wlNext: self.wlNext
       }, options);

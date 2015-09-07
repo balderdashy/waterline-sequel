@@ -90,7 +90,7 @@ utils.mapAttributes = function(data, options) {
     var k = escapeInserts ? (options.escapeCharacter + key + options.escapeCharacter) : key;
     keys.push(k);
 
-    var value = utils.prepareValue(data[key]);
+    var value = utils.prepareValue(data[key], options);
 
     values.push(value);
 
@@ -119,10 +119,10 @@ utils.mapAttributes = function(data, options) {
  * to strings.
  */
 
-utils.prepareValue = function(value) {
+utils.prepareValue = function(value, options) {
 
   // Cast dates to SQL
-  if (_.isDate(value)) {
+  if (_.isDate(value) && options.convertDate) {
     value = utils.toSqlDate(value);
   }
 

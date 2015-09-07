@@ -69,6 +69,8 @@ var Sequel = module.exports = function(schema, options) {
   // Oracle require this for limit and skip
   this.rownum = options && utils.object.hasOwnProperty(options, 'rownum') ? options.rownum : false;
 
+  this.convertDate = options && utils.object.hasOwnProperty(options, 'convertDate') ? options.convertDate : true;
+
   this.tableAs = this.explicitTableAs ? ' AS ' : ' ';
 
   // Waterline NEXT
@@ -184,7 +186,8 @@ Sequel.prototype.create = function create(currentTable, data) {
     parameterized: this.parameterized,
     escapeCharacter: this.escapeCharacter,
     escapeInserts: this.escapeInserts,
-    paramCharacter: this.paramCharacter
+    paramCharacter: this.paramCharacter,
+    convertDate: this.convertDate
   };
 
   // Transform the Data object into arrays used in a parameterized query
@@ -211,7 +214,8 @@ Sequel.prototype.update = function update(currentTable, queryObject, data) {
   var options = {
     parameterized: this.parameterized,
     escapeCharacter: this.escapeCharacter,
-    escapeInserts: this.escapeInserts
+    escapeInserts: this.escapeInserts,
+    paramCharacter: this.paramCharacter
   };
 
   // Get the attribute identity (as opposed to the table name)
@@ -291,6 +295,7 @@ Sequel.prototype.destroy = function destroy(currentTable, queryObject) {
 Sequel.prototype.select = function select(currentTable, queryObject) {
   var options = {
     escapeCharacter: this.escapeCharacter,
+    paramCharacter: this.paramCharcter,
     caseSensitive: this.caseSensitive,
     cast: this.cast,
     explicitTableAs: this.explicitTableAs,

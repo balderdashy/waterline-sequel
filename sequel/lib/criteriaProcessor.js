@@ -726,7 +726,8 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
         str = comparator + ' ' + '$' + this.paramCount;
       }
       else {
-        str = comparator + ' "' + utils.escapeString(value, true) + '"';
+        // Note that wildcards are not escaped out of like criterion intentionally
+        str = comparator + ' "' + utils.escapeString(value) + '"';
       }
 
       break;

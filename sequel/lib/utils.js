@@ -34,6 +34,12 @@ utils.object.hasOwnProperty = function(obj, prop) {
  *
  * Wraps a name in quotes to allow reserved
  * words as table or column names such as user.
+ *
+ *
+ * NOTE: do not use this method to escape strings in a general-purpose way.
+ * This is intended only to escape schema object (e.g. table and column) names.
+ * Check out utils.escapeString() for other purposes.  No harm in taking a
+ * peek at https://dev.mysql.com/doc/refman/5.7/en/identifiers.html .
  */
 
 utils.escapeName = function escapeName(name, escapeCharacter) {

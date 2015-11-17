@@ -21,7 +21,7 @@
     "sails-mysql": "git://github.com/balderdashy/sails-mysql",
     "sails-postgresql": "git://github.com/balderdashy/sails-postgresql",
     "should": "^5.2.0",
-    "waterline-adapter-tests": "^0.10.8"
+    "waterline-adapter-tests": "^0.10.15"
   },
   "scripts": {
     "test": "make test",

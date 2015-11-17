@@ -13,7 +13,7 @@ require("fs").readdirSync(__dirname + '/').forEach(function (file) {
     return;
   }
 
-  queries.push(query);
+  queries = queries.concat(query);
 });
 
 module.exports = queries;

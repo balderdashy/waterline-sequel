@@ -726,7 +726,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
         str = comparator + ' ' + '$' + this.paramCount;
       }
       else {
-        str = comparator + ' ' + utils.escapeName(value, '"');
+        str = comparator + ' "' + utils.escapeString(value) + '"';
       }
 
       break;
@@ -750,7 +750,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
         str = comparator + ' ' + '$' + this.paramCount;
       }
       else {
-        str = comparator + ' ' + utils.escapeName('%' + value + '%', '"');
+        str = comparator + ' "%' + utils.escapeString(value) + '%"';
       }
 
       break;
@@ -774,7 +774,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
         str = comparator + ' ' + '$' + this.paramCount;
       }
       else {
-        str = comparator + ' ' + utils.escapeName(value + '%', '"');
+        str = comparator + ' "' + utils.escapeString(value) + '%"';
       }
 
       break;
@@ -798,7 +798,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
         str = comparator + ' ' + '$' + this.paramCount;
       }
       else {
-        str = comparator + ' ' + utils.escapeName('%' + value, '"');
+        str = comparator + ' "%' + utils.escapeString(value) + '"';
       }
 
       break;
@@ -841,7 +841,7 @@ CriteriaProcessor.prototype.skip = function(options) {
 CriteriaProcessor.prototype.sort = function(options) {
   var keys = Object.keys(options);
   if (!keys.length) { return; }
-  
+
   var self = this;
   this.queryString += ' ORDER BY ';
 

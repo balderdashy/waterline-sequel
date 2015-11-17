@@ -139,10 +139,10 @@ utils.prepareValue = function(value) {
  * Escape Strings
  */
 
-utils.escapeString = function(value) {
+utils.escapeString = function(value, forLike) {
   if(!_.isString(value)) return value;
 
-  value = value.replace(/[\0\n\r\b\t\\\'\"\x1a]/g, function(s) {
+  value = value.replace(/[_%\0\n\r\b\t\\\'\"\x1a]/g, function(s) {
     switch(s) {
       case "\0": return "\\0";
       case "\n": return "\\n";
@@ -150,6 +150,8 @@ utils.escapeString = function(value) {
       case "\b": return "\\b";
       case "\t": return "\\t";
       case "\x1a": return "\\Z";
+      case "%": return forLike ? "\\%" : "%";
+      case "_": return forLike ? "\\_" : "_";
       default: return "\\"+s;
     }
   });

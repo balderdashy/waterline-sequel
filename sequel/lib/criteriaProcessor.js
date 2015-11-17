@@ -726,7 +726,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
         str = comparator + ' ' + '$' + this.paramCount;
       }
       else {
-        str = comparator + ' "' + utils.escapeString(value) + '"';
+        str = comparator + ' "' + utils.escapeString(value, true) + '"';
       }
 
       break;
@@ -750,7 +750,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
         str = comparator + ' ' + '$' + this.paramCount;
       }
       else {
-        str = comparator + ' "%' + utils.escapeString(value) + '%"';
+        str = comparator + ' "%' + utils.escapeString(value, true) + '%"';
       }
 
       break;
@@ -774,7 +774,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
         str = comparator + ' ' + '$' + this.paramCount;
       }
       else {
-        str = comparator + ' "' + utils.escapeString(value) + '%"';
+        str = comparator + ' "' + utils.escapeString(value, true) + '%"';
       }
 
       break;
@@ -798,7 +798,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
         str = comparator + ' ' + '$' + this.paramCount;
       }
       else {
-        str = comparator + ' "%' + utils.escapeString(value) + '"';
+        str = comparator + ' "%' + utils.escapeString(value, true) + '"';
       }
 
       break;

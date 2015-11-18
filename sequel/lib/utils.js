@@ -57,8 +57,9 @@ utils.escapeName = function escapeName(name, escapeCharacter) {
  * @returns {string}
  */
 
-utils.populationAlias = function (alias) {
-  return '__' + alias;
+utils.populationAlias = function (alias, prefix) {
+  prefix = prefix || '__';
+  return prefix + alias;
 };
 
 /**
@@ -83,16 +84,18 @@ utils.mapAttributes = function(data, options) {
   // Determine if we should escape the inserted characters
   var escapeInserts = options && utils.object.hasOwnProperty(options, 'escapeInserts') ? options.escapeInserts : false;
 
+  var paramCharacter = options && utils.object.hasOwnProperty(options, 'paramCharacter') ? options.paramCharacter : '$';
+
   Object.keys(data).forEach(function(key) {
     var k = escapeInserts ? (options.escapeCharacter + key + options.escapeCharacter) : key;
     keys.push(k);
 
-    var value = utils.prepareValue(data[key]);
+    var value = utils.prepareValue(data[key], options);
 
     values.push(value);
 
     if(parameterized) {
-      params.push('$' + i);
+      params.push(paramCharacter + i);
     }
     else {
       if(value === null || value === undefined) {
@@ -116,10 +119,10 @@ utils.mapAttributes = function(data, options) {
  * to strings.
  */
 
-utils.prepareValue = function(value) {
+utils.prepareValue = function(value, options) {
 
   // Cast dates to SQL
-  if (_.isDate(value)) {
+  if (_.isDate(value) && options.convertDate) {
     value = utils.toSqlDate(value);
   }
 

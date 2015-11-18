@@ -27,6 +27,9 @@ var Sequel = module.exports = function(schema, options) {
   // Default is true.
   this.parameterized = options && utils.object.hasOwnProperty(options, 'parameterized') ? options.parameterized : true;
 
+  // leading character for parameter vars (ie $1, $2 or :1, :2)
+  this.paramCharacter = options && utils.object.hasOwnProperty(options, 'paramCharacter') ? options.paramCharacter : '$';
+
   // Flag if things should be cast, useful for averages
   this.cast = options && utils.object.hasOwnProperty(options, 'casting') ? options.casting : false;
 
@@ -50,6 +53,26 @@ var Sequel = module.exports = function(schema, options) {
   // MySQL and Oracle require this, but it doesn't work in Postgresql.
   this.declareDeleteAlias = options && utils.object.hasOwnProperty(options, 'declareDeleteAlias') ? options.declareDeleteAlias : true;
 
+  // Determinie if an explicite 'AS' is written between the tableName and its aliasName, e.g
+  // SELECT * FROM `tableName` `otherTableName`
+  // Oracle require this
+  this.explicitTableAs = options && utils.object.hasOwnProperty(options, 'explicitTableAs') ? options.explicitTableAs : true;
+
+  // Set the prefix string use on aliasName in associations, default is __
+  this.prefixAlias = options && utils.object.hasOwnProperty(options, 'prefixAlias') ? options.prefixAlias : '__';
+
+  // Set the character used before and after string value to delimit them, default is "
+  this.stringDelimiter = options && utils.object.hasOwnProperty(options, 'stringDelimiter') ? options.stringDelimiter : '"';
+
+  // Determine if SELECT queries include a ROWNUM column for skip and limit them, e.q
+  // SELECT ROWNUM AS LINE_NUMBER, * FROM `tableName`
+  // Oracle require this for limit and skip
+  this.rownum = options && utils.object.hasOwnProperty(options, 'rownum') ? options.rownum : false;
+
+  this.convertDate = options && utils.object.hasOwnProperty(options, 'convertDate') ? options.convertDate : true;
+
+  this.tableAs = this.explicitTableAs ? ' AS ' : ' ';
+
   // Waterline NEXT
   // These are flags that can be toggled today and expose future features. If any of the following are turned
   // on the adapter tests will probably not pass. If you toggle these know what you are getting into.
@@ -65,7 +88,6 @@ var Sequel = module.exports = function(schema, options) {
 
 
   this.values = [];
-
   return this;
 };
 
@@ -163,7 +185,9 @@ Sequel.prototype.create = function create(currentTable, data) {
   var options = {
     parameterized: this.parameterized,
     escapeCharacter: this.escapeCharacter,
-    escapeInserts: this.escapeInserts
+    escapeInserts: this.escapeInserts,
+    paramCharacter: this.paramCharacter,
+    convertDate: this.convertDate
   };
 
   // Transform the Data object into arrays used in a parameterized query
@@ -190,13 +214,14 @@ Sequel.prototype.update = function update(currentTable, queryObject, data) {
   var options = {
     parameterized: this.parameterized,
     escapeCharacter: this.escapeCharacter,
-    escapeInserts: this.escapeInserts
+    escapeInserts: this.escapeInserts,
+    paramCharacter: this.paramCharacter
   };
 
   // Get the attribute identity (as opposed to the table name)
   var identity = currentTable;
   // Create the query with the tablename aliased as the identity (in case they are different)
-  var query = 'UPDATE ' + utils.escapeName(currentTable, this.escapeCharacter) + ' AS ' + utils.escapeName(identity, this.escapeCharacter) + ' ';
+  var query = 'UPDATE ' + utils.escapeName(currentTable, this.escapeCharacter) + this.tableAs + utils.escapeName(identity, this.escapeCharacter) + ' ';
 
   // Transform the Data object into arrays used in a parameterized query
   var attributes = utils.mapAttributes(data, options);
@@ -244,7 +269,7 @@ Sequel.prototype.destroy = function destroy(currentTable, queryObject) {
   // Get the attribute identity (as opposed to the table name)
   var identity = currentTable;
 
-  var query = 'DELETE ' + (this.declareDeleteAlias ? utils.escapeName(identity, this.escapeCharacter) : '') + ' FROM ' + utils.escapeName(currentTable, this.escapeCharacter) + ' AS ' + utils.escapeName(identity, this.escapeCharacter) + ' ';
+  var query = 'DELETE ' + (this.declareDeleteAlias ? utils.escapeName(identity, this.escapeCharacter) : '') + ' FROM ' + utils.escapeName(currentTable, this.escapeCharacter) + this.tableAs + utils.escapeName(identity, this.escapeCharacter) + ' ';
 
   // Build Criteria clause
   var whereObject = this.simpleWhere(currentTable, queryObject);
@@ -270,8 +295,13 @@ Sequel.prototype.destroy = function destroy(currentTable, queryObject) {
 Sequel.prototype.select = function select(currentTable, queryObject) {
   var options = {
     escapeCharacter: this.escapeCharacter,
+    paramCharacter: this.paramCharcter,
     caseSensitive: this.caseSensitive,
     cast: this.cast,
+    explicitTableAs: this.explicitTableAs,
+    prefixAlias: this.prefixAlias,
+    stringDelimiter: this.stringDelimiter,
+    rownum: this.rownum,
     wlNext: this.wlNext
   };
 
@@ -287,6 +317,10 @@ Sequel.prototype.simpleWhere = function simpleWhere(currentTable, queryObject, o
     parameterized: this.parameterized,
     caseSensitive: this.caseSensitive,
     escapeCharacter: this.escapeCharacter,
+    paramCharacter: this.paramCharacter,
+    explicitTableAs: this.explicitTableAs,
+    prefixAlias: this.prefixAlias,
+    stringDelimiter: this.stringDelimiter,
     wlNext: this.wlNext
   };
 
@@ -298,7 +332,12 @@ Sequel.prototype.complexWhere = function complexWhere(currentTable, queryObject,
   var _options = {
     parameterized: this.parameterized,
     caseSensitive: this.caseSensitive,
-    escapeCharacter: this.escapeCharacter
+    escapeCharacter: this.escapeCharacter,
+    paramCharacter: this.paramCharacter,
+    explicitTableAs: this.explicitTableAs,
+    prefixAlias: this.prefixAlias,
+    stringDelimiter: this.stringDelimiter,
+    rownum: this.rownum	
   };
 
   var where = new WhereBuilder(this.schema, currentTable, _options);

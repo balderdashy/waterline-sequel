@@ -30,7 +30,7 @@ var SelectBuilder = module.exports = function(schema, currentTable, queryObject,
 
   // Add support for WLNext features
   if(options && hop(options, 'wlNext')) {
-    this.wlNext = options.wlNext
+    this.wlNext = options.wlNext;
   }
 
   var queries = [];
@@ -135,7 +135,7 @@ SelectBuilder.prototype.processAggregates = function processAggregates(criteria)
 
   // Append groupBy columns to select statement
   if(criteria.groupBy) {
-    if(criteria.groupBy instanceof Array) {
+    if(Array.isArray(criteria.groupBy)) {
       criteria.groupBy.forEach(function(opt) {
         query += tableName + '.' + utils.escapeName(opt, self.escapeCharacter) + ', ';
       });
@@ -148,7 +148,7 @@ SelectBuilder.prototype.processAggregates = function processAggregates(criteria)
   // Handle SUM
   if (criteria.sum) {
     var sum = '';
-    if(criteria.sum instanceof Array) {
+    if(Array.isArray(criteria.sum)) {
       criteria.sum.forEach(function(opt) {
         sum = 'SUM(' + tableName + '.' + utils.escapeName(opt, self.escapeCharacter) + ')';
         if(self.cast) {
@@ -169,7 +169,7 @@ SelectBuilder.prototype.processAggregates = function processAggregates(criteria)
   // Handle AVG (casting to float to fix percision with trailing zeros)
   if (criteria.average) {
     var avg = '';
-    if(criteria.average instanceof Array) {
+    if(Array.isArray(criteria.average)) {
       criteria.average.forEach(function(opt){
         avg = 'AVG(' + tableName + '.' + utils.escapeName(opt, self.escapeCharacter) + ')';
         if(self.cast) {
@@ -189,7 +189,7 @@ SelectBuilder.prototype.processAggregates = function processAggregates(criteria)
   // Handle MAX
   if (criteria.max) {
     var max = '';
-    if(criteria.max instanceof Array) {
+    if(Array.isArray(criteria.max)) {
       criteria.max.forEach(function(opt){
         query += 'MAX(' + tableName + '.' + utils.escapeName(opt, self.escapeCharacter) + ') AS ' + opt + ', ';
       });
@@ -201,7 +201,7 @@ SelectBuilder.prototype.processAggregates = function processAggregates(criteria)
 
   // Handle MIN
   if (criteria.min) {
-    if(criteria.min instanceof Array) {
+    if(Array.isArray(criteria.min)) {
       criteria.min.forEach(function(opt){
         query += 'MIN(' + tableName + '.' + utils.escapeName(opt, self.escapeCharacter) + ') AS ' + opt + ', ';
       });

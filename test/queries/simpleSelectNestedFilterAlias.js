@@ -35,10 +35,10 @@ module.exports = {
     // Sequel.find()
     find  : {
 
-      // The queryString we expect to be rendered after calling `Sequel.select()`
+      // The queryString we expect to be rendered after calling `Sequel.find()`
       queryString    : 'SELECT `oddity`.`meta`, `oddity`.`id`, `oddity`.`createdAt`, `oddity`.`updatedAt`, `oddity`.`stubborn`, `oddity`.`bat` FROM `oddity` AS `oddity`  WHERE `__bar`.`meta` = "foo"  ',
 
-      // The number of queries that will be returned after calling Sequel.select()
+      // The number of queries that will be returned after calling Sequel.find()
       queriesReturned: 1
     }
   }

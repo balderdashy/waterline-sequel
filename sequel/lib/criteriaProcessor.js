@@ -146,6 +146,10 @@ CriteriaProcessor.prototype.expand = function expand(key, val) {
       self.like(val);
       return;
 
+    case 'and':
+      self.andArray(val);
+      return;
+
     // Key/Value
     default:
 
@@ -180,7 +184,7 @@ CriteriaProcessor.prototype.or = function or(val) {
   val.forEach(function(statement) {
     self.queryString += '(';
 
-    // Recursively call expand. Assumes no nesting of `or` statements
+    // Recursively call expand
     _.keys(statement).forEach(function(key) {
       self.expand(key, statement[key]);
     });
@@ -242,7 +246,6 @@ CriteriaProcessor.prototype.like = function like(val) {
 /**
  * Handle `AND` Criteria
  */
-
 CriteriaProcessor.prototype.and = function and(key, val) {
 
   var caseSensitive = true;
@@ -259,6 +262,42 @@ CriteriaProcessor.prototype.and = function and(key, val) {
 
   this.process(key, val, '=', caseSensitive);
   this.queryString += ' AND ';
+};
+
+/**
+ * Handle array-ish `AND` criteria
+ */
+CriteriaProcessor.prototype.andArray = function deepAnd(val) {
+  var self = this;
+
+  if(!Array.isArray(val)) {
+    throw new Error('`and` statements must be in an array.');
+  }
+
+  // Wrap the entire AND clause
+  this.queryString += '(';
+
+  val.forEach(function(statement) {
+    self.queryString += '(';
+
+    // Recursively call expand
+    _.keys(statement).forEach(function(key) {
+      self.expand(key, statement[key]);
+    });
+
+    if(self.queryString.slice(-4) === 'AND ') {
+      self.queryString = self.queryString.slice(0, -5);
+    }
+
+    self.queryString += ') AND ';
+  });
+
+  // Remove trailing OR if it exists
+  if(self.queryString.slice(-4) === 'AND ') {
+    self.queryString = self.queryString.slice(0, -5);
+  }
+
+  self.queryString += ') AND ';
 };
 
 /**

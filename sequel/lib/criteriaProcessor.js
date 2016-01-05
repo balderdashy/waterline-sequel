@@ -868,7 +868,12 @@ CriteriaProcessor.prototype.group = function(options) {
   if(!Array.isArray(options)) options = [options];
 
   options.forEach(function(key) {
-    self.queryString += utils.escapeName(self.currentTable, self.escapeCharacter) + '.' + utils.escapeName(key, self.escapeCharacter) + ', ';
+    // Check whether we are grouping by a column or an expression.
+    if (_.includes(_.keys(self.currentSchema), key)) {
+      self.queryString += utils.escapeName(self.currentTable, self.escapeCharacter) + '.' + utils.escapeName(key, self.escapeCharacter) + ', ';
+    } else {
+      self.queryString += key + ', ';
+    }
   });
 
   // Remove trailing comma

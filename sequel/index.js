@@ -188,7 +188,7 @@ Sequel.prototype.create = function create(currentTable, data) {
  */
 
 Sequel.prototype.update = function update(currentTable, queryObject, data) {
-  console.log("currentTable", currentTable);
+
   var options = {
     parameterized: this.parameterized,
     escapeCharacter: this.escapeCharacter,

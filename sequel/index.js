@@ -117,6 +117,7 @@ Sequel.prototype.count = function count(currentTable, queryObject) {
 
   // Escape table name
   var tableName = utils.escapeName(this.schema[currentTable].tableName, this.escapeCharacter, this.schemaName);
+  var alias = utils.escapeName(this.schema[currentTable].tableName, this.escapeCharacter);
 
   // Step 1:
   // Build out the Count statements
@@ -137,7 +138,7 @@ Sequel.prototype.count = function count(currentTable, queryObject) {
 
   // Append the sub-query to the COUNT so you end up with something that looks like:
   // SELECT count(*) as count FROM (SELECT * FROM table LIMIT 10 OFFSET 10) AS tableAlias;
-  this.queries[0] += '(SELECT * FROM ' + tableName + ' ' + whereObject.query + ') AS ' + tableName;
+  this.queries[0] += '(SELECT * FROM ' + tableName + ' ' + whereObject.query + ') AS ' + alias;
   this.values[0] = whereObject.values;
 
   /**

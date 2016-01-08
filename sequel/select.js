@@ -14,9 +14,6 @@ var hop = utils.object.hasOwnProperty;
 
 var SelectBuilder = module.exports = function(schema, currentTable, queryObject, options) {
 
-  // if (options.schemaName && currentTable.indexOf('.') > -1) {
-  //   currentTable = currentTable.split('.').slice(1).join('.');
-  // }
   this.schema = schema;
   this.currentSchema = schema[currentTable].attributes;
   this.currentTable = currentTable;

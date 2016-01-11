@@ -63,6 +63,7 @@ var Sequel = module.exports = function(schema, options) {
 
   };
 
+  this.schemaName = options && utils.object.hasOwnProperty(options, 'schemaName') ? options.schemaName : false;
 
   this.values = [];
 
@@ -115,7 +116,8 @@ Sequel.prototype.find = function find(currentTable, queryObject) {
 Sequel.prototype.count = function count(currentTable, queryObject) {
 
   // Escape table name
-  var tableName = utils.escapeName(this.schema[currentTable].tableName, this.escapeCharacter);
+  var tableName = utils.escapeName(this.schema[currentTable].tableName, this.escapeCharacter, this.schemaName);
+  var alias = utils.escapeName(this.schema[currentTable].tableName, this.escapeCharacter);
 
   // Step 1:
   // Build out the Count statements
@@ -136,7 +138,7 @@ Sequel.prototype.count = function count(currentTable, queryObject) {
 
   // Append the sub-query to the COUNT so you end up with something that looks like:
   // SELECT count(*) as count FROM (SELECT * FROM table LIMIT 10 OFFSET 10) AS tableAlias;
-  this.queries[0] += '(SELECT * FROM ' + tableName + ' ' + whereObject.query + ') AS ' + tableName;
+  this.queries[0] += '(SELECT * FROM ' + tableName + ' ' + whereObject.query + ') AS ' + alias;
   this.values[0] = whereObject.values;
 
   /**
@@ -163,7 +165,8 @@ Sequel.prototype.create = function create(currentTable, data) {
   var options = {
     parameterized: this.parameterized,
     escapeCharacter: this.escapeCharacter,
-    escapeInserts: this.escapeInserts
+    escapeInserts: this.escapeInserts,
+    schemaName: this.schemaName
   };
 
   // Transform the Data object into arrays used in a parameterized query
@@ -172,7 +175,7 @@ Sequel.prototype.create = function create(currentTable, data) {
   var paramValues = attributes.params.join(', ');
 
   // Build Query
-  var query = 'INSERT INTO ' + utils.escapeName(currentTable, this.escapeCharacter) + ' (' + columnNames + ') values (' + paramValues + ')';
+  var query = 'INSERT INTO ' + utils.escapeName(currentTable, this.escapeCharacter, this.schemaName) + ' (' + columnNames + ') values (' + paramValues + ')';
 
   if(this.canReturnValues) {
     query += ' RETURNING *';
@@ -190,13 +193,14 @@ Sequel.prototype.update = function update(currentTable, queryObject, data) {
   var options = {
     parameterized: this.parameterized,
     escapeCharacter: this.escapeCharacter,
-    escapeInserts: this.escapeInserts
+    escapeInserts: this.escapeInserts,
+    schemaName: this.schemaName
   };
 
   // Get the attribute identity (as opposed to the table name)
   var identity = currentTable;
   // Create the query with the tablename aliased as the identity (in case they are different)
-  var query = 'UPDATE ' + utils.escapeName(currentTable, this.escapeCharacter) + ' AS ' + utils.escapeName(identity, this.escapeCharacter) + ' ';
+  var query = 'UPDATE ' + utils.escapeName(currentTable, this.escapeCharacter, this.schemaName) + ' AS ' + utils.escapeName(identity, this.escapeCharacter) + ' ';
 
   // Transform the Data object into arrays used in a parameterized query
   var attributes = utils.mapAttributes(data, options);
@@ -244,7 +248,7 @@ Sequel.prototype.destroy = function destroy(currentTable, queryObject) {
   // Get the attribute identity (as opposed to the table name)
   var identity = currentTable;
 
-  var query = 'DELETE ' + (this.declareDeleteAlias ? utils.escapeName(identity, this.escapeCharacter) : '') + ' FROM ' + utils.escapeName(currentTable, this.escapeCharacter) + ' AS ' + utils.escapeName(identity, this.escapeCharacter) + ' ';
+  var query = 'DELETE ' + (this.declareDeleteAlias ? utils.escapeName(identity, this.escapeCharacter) : '') + ' FROM ' + utils.escapeName(currentTable, this.escapeCharacter, this.schemaName) + ' AS ' + utils.escapeName(identity, this.escapeCharacter) + ' ';
 
   // Build Criteria clause
   var whereObject = this.simpleWhere(currentTable, queryObject);
@@ -272,7 +276,8 @@ Sequel.prototype.select = function select(currentTable, queryObject) {
     escapeCharacter: this.escapeCharacter,
     caseSensitive: this.caseSensitive,
     cast: this.cast,
-    wlNext: this.wlNext
+    wlNext: this.wlNext,
+    schemaName: this.schemaName
   };
 
   return new SelectBuilder(this.schema, currentTable, queryObject, options);
@@ -287,7 +292,8 @@ Sequel.prototype.simpleWhere = function simpleWhere(currentTable, queryObject, o
     parameterized: this.parameterized,
     caseSensitive: this.caseSensitive,
     escapeCharacter: this.escapeCharacter,
-    wlNext: this.wlNext
+    wlNext: this.wlNext,
+    schemaName: this.schemaName
   };
 
   var where = new WhereBuilder(this.schema, currentTable, _options);
@@ -298,7 +304,8 @@ Sequel.prototype.complexWhere = function complexWhere(currentTable, queryObject,
   var _options = {
     parameterized: this.parameterized,
     caseSensitive: this.caseSensitive,
-    escapeCharacter: this.escapeCharacter
+    escapeCharacter: this.escapeCharacter,
+    schemaName: this.schemaName
   };
 
   var where = new WhereBuilder(this.schema, currentTable, _options);

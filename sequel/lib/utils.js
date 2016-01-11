@@ -42,10 +42,14 @@ utils.object.hasOwnProperty = function(obj, prop) {
  * peek at https://dev.mysql.com/doc/refman/5.7/en/identifiers.html .
  */
 
-utils.escapeName = function escapeName(name, escapeCharacter) {
+utils.escapeName = function escapeName(name, escapeCharacter, schemaName) {
   var regex = new RegExp(escapeCharacter, 'g');
   var replacementString = '' + escapeCharacter + escapeCharacter;
   var replacementDot = '\.';
+  if (schemaName && schemaName[name]) {
+    return utils.escapeName(schemaName[name], escapeCharacter) + '.' + 
+    utils.escapeName(name, escapeCharacter);
+  }
   return '' + escapeCharacter + name.replace(regex, replacementString).replace(/\./g, replacementDot) + escapeCharacter;
 };
 

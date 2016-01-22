@@ -260,8 +260,8 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
 
       var stage1 = queryObject.instructions[attr].instructions[0];
       var stage2 = queryObject.instructions[attr].instructions[1];
-      stage1ChildAlias = _.find(_.values(self.schema), {tableName: stage1.child}).tableName;
-      stage2ChildAlias = _.find(_.values(self.schema), {tableName: stage2.child}).tableName;
+      var stage1ChildAlias = _.find(_.values(self.schema), {tableName: stage1.child}).tableName;
+      var stage2ChildAlias = _.find(_.values(self.schema), {tableName: stage2.child}).tableName;
 
       // Mixin the parameterized flag into options
       _options = _.assign({

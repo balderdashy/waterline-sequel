@@ -574,6 +574,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
   var str;
   var comparator;
   var escapedDate = false;
+  var bumpParamCount = true;
 
   // Check value for a date type
   if(_.isDate(value)) {
@@ -658,6 +659,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
     case 'not':
       if(value === null) {
         str = 'IS NOT NULL';
+        bumpParamCount = false;
       }
       else {
         // For array values, do a "NOT IN"
@@ -810,7 +812,9 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
   }
 
   // Bump paramCount
-  this.paramCount++;
+  if(bumpParamCount) {
+    this.paramCount++;
+  }
 
   // Add str to query
   this.queryString += str;

@@ -140,7 +140,7 @@ SelectBuilder.prototype.processAggregates = function processAggregates(criteria)
 
     criteria.groupBy.forEach(function(key, index) {
       // Check whether we are grouping by a column or an expression.
-      if (_.includes(_.keys(self.currentSchema), key)) {
+      if (_.includes(_.keys(self.currentSchema), key) || _.includes(_.chain(self.currentSchema).map(_.values).flatten().value(), key) ) {
         query += tableName + '.' + utils.escapeName(key, self.escapeCharacter) + ', ';
       } else {
         query += key + ' as group' + index + ', ';

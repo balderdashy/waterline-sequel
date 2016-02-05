@@ -465,13 +465,13 @@ CriteriaProcessor.prototype.processSimple = function processSimple (tableName, p
     return;
   }
 
+  // Check if the value is a DATE and if it's not a date turn it into one
+  if(parentType === 'date' && !_.isDate(obj[key])) {
+    obj[key] = new Date(obj[key]);
+  }
+
   if(_.isDate(value)) {
-    value = value.getFullYear() + '-' +
-    ('00' + (value.getMonth()+1)).slice(-2) + '-' +
-    ('00' + value.getDate()).slice(-2) + ' ' +
-    ('00' + value.getHours()).slice(-2) + ':' +
-    ('00' + value.getMinutes()).slice(-2) + ':' +
-    ('00' + value.getSeconds()).slice(-2);
+    utils.prepareValue(obj[key]);
   }
 
   if (_.isString(value)) {
@@ -528,6 +528,12 @@ CriteriaProcessor.prototype.processObject = function processObject (tableName, p
 
       if (!sensitive && _.isString(obj[key]) && lower) {
         obj[key] = obj[key].toLowerCase();
+      }
+
+      // Check if the value is a DATE and if it's not a date turn it into one
+      if(parentType === 'date' && !_.isDate(obj[key])) {
+        obj[key] = new Date(obj[key]);
+        utils.prepareValue(obj[key]);
       }
 
       // Check if value is a string and if so add LOWER logic

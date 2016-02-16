@@ -466,12 +466,20 @@ CriteriaProcessor.prototype.processSimple = function processSimple (tableName, p
   }
 
   // Check if the value is a DATE and if it's not a date turn it into one
-  if(parentType === 'date' && !_.isDate(obj[key])) {
-    obj[key] = new Date(obj[key]);
+  if(parentType === 'date' && !_.isDate(value)) {
+    value = new Date(value);
   }
 
   if(_.isDate(value)) {
-    utils.prepareValue(obj[key]);
+    var date = value;
+    date = date.getFullYear() + '-' +
+      ('00' + (date.getMonth()+1)).slice(-2) + '-' +
+      ('00' + date.getDate()).slice(-2) + ' ' +
+      ('00' + date.getHours()).slice(-2) + ':' +
+      ('00' + date.getMinutes()).slice(-2) + ':' +
+      ('00' + date.getSeconds()).slice(-2);
+
+    value = date;
   }
 
   if (_.isString(value)) {
@@ -532,8 +540,15 @@ CriteriaProcessor.prototype.processObject = function processObject (tableName, p
 
       // Check if the value is a DATE and if it's not a date turn it into one
       if(parentType === 'date' && !_.isDate(obj[key])) {
-        obj[key] = new Date(obj[key]);
-        utils.prepareValue(obj[key]);
+        var date = new Date(obj[key]);
+        date = date.getFullYear() + '-' +
+          ('00' + (date.getMonth()+1)).slice(-2) + '-' +
+          ('00' + date.getDate()).slice(-2) + ' ' +
+          ('00' + date.getHours()).slice(-2) + ':' +
+          ('00' + date.getMinutes()).slice(-2) + ':' +
+          ('00' + date.getSeconds()).slice(-2);
+
+        obj[key] = date;
       }
 
       // Check if value is a string and if so add LOWER logic

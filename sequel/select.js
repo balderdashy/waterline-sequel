@@ -66,6 +66,18 @@ SelectBuilder.prototype.buildSimpleSelect = function buildSimpleSelect(queryObje
   var selectKeys = [];
   var query = 'SELECT ';
 
+  // If there is a select projection, ensure that the primary key is added.
+  var pk;
+  _.each(this.schema[this.currentTable].attributes, function(val, key) {
+    if(_.has(val, 'primaryKey') && val.primaryKey) {
+      pk = key;
+    }
+  });
+
+  if(queryObject.select && !_.includes(queryObject.select, pk)) {
+    queryObject.select.push(pk);
+  }
+
   var attributes = queryObject.select || Object.keys(this.schema[this.currentTable].attributes);
   delete queryObject.select;
 

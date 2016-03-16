@@ -122,8 +122,8 @@ WhereBuilder.prototype.single = function single(queryObject, options) {
   // Ensure a sort is always set so that we get back consistent results
   if(!hop(queryObject, 'sort')) {
     var childPK;
-    _.keys(this.schema[this.currentTable].attributes).forEach(function(attr) {
-      var expandedAttr = self.schema[self.currentTable].attributes[attr];
+    _.keys(this.schema[this.currentTable].definition).forEach(function(attr) {
+      var expandedAttr = self.schema[self.currentTable].definition[attr];
       if(!hop(expandedAttr, 'primaryKey')) return;
       childPK = expandedAttr.columnName || attr;
     });
@@ -220,8 +220,8 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
       // Ensure a sort is always set so that we get back consistent results
       if(!hop(population.criteria, 'sort')) {
 
-        _.keys(self.schema[populationAlias].attributes).forEach(function(attr) {
-          var expandedAttr = self.schema[populationAlias].attributes[attr];
+        _.keys(self.schema[populationAlias].definition).forEach(function(attr) {
+          var expandedAttr = self.schema[populationAlias].definition[attr];
           if(!hop(expandedAttr, 'primaryKey')) return;
           childPK = expandedAttr.columnName || attr;
         });

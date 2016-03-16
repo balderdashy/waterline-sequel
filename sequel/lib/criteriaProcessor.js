@@ -36,7 +36,7 @@ var CriteriaProcessor = module.exports = function CriteriaProcessor(currentTable
 
   this.currentTable = currentTable;
   this.schema = schema;
-  this.currentSchema = schema[currentTable].attributes;
+  this.currentSchema = schema[currentTable].definition;
   this.tableScope = null;
   this.queryString = '';
   this.values = [];
@@ -428,7 +428,7 @@ CriteriaProcessor.prototype.findChild = function findChild (child) {
 CriteriaProcessor.prototype.processSimple = function processSimple (tableName, parent, value, combinator, sensitive) {
   // Set lower logic to true
   var sensitiveTypes = ['text', 'string'],
-      currentSchema = this.schema[tableName].attributes,
+      currentSchema = this.schema[tableName].definition,
       self = this,
       parentType,
       lower;
@@ -499,7 +499,7 @@ CriteriaProcessor.prototype.processSimple = function processSimple (tableName, p
  * @param {string}  [alias]
  */
 CriteriaProcessor.prototype.processObject = function processObject (tableName, parent, value, combinator, sensitive) {
-  var currentSchema = this.schema[tableName].attributes,
+  var currentSchema = this.schema[tableName].definition,
       self = this,
       parentType;
 

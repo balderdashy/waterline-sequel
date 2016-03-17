@@ -101,10 +101,16 @@ SelectBuilder.prototype.buildSimpleSelect = function buildSimpleSelect(queryObje
     // Handle hasFK
     var childAlias = _.find(_.values(self.schema), {tableName: population.child}).tableName;
 
-    _.keys(self.schema[childAlias].definition).forEach(function(key) {
+    // Ensure the foreignKey is selected if a custom select was defined
+    if(population.select && !_.includes(population.select, population.childKey)) {
+      population.select.push(population.childKey);
+    }
+
+    var attributes = population.select || _.keys(self.schema[childAlias].definition);
+    _.each(attributes, function(key) {
       var schema = self.schema[childAlias].definition[key];
       if(hop(schema, 'collection')) return;
-      selectKeys.push({ table: population.alias ? "__"+population.alias : population.child, key: schema.columnName || key, alias: population.parentKey });
+      selectKeys.push({ table: population.alias ? '__' + population.alias : population.child, key: schema.columnName || key, alias: population.parentKey });
     });
   });
 

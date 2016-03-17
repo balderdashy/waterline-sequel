@@ -1,5 +1,9 @@
 # Waterline-Sequel Changelog
 
+### 0.6.0
+
+* [ENHANCEMENT] Add the ability to use projections in join queries. See [#80](https://github.com/balderdashy/waterline-sequel/pull/80) for more details.
+
 ### 0.5.7
 
 * [Bug] Actually fixes issue when building criteria with dates instead of causing more issues. See [#79](https://github.com/balderdashy/waterline-sequel/pull/79) for more.

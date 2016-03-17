@@ -71,7 +71,7 @@ var WhereBuilder = module.exports = function WhereBuilder(schema, currentTable, 
 
   if(options && hop(options, 'schemaName')) {
     this.schemaName = options.schemaName;
-  }  
+  }
 
   return this;
 };
@@ -84,8 +84,8 @@ var WhereBuilder = module.exports = function WhereBuilder(schema, currentTable, 
 WhereBuilder.prototype.single = function single(queryObject, options) {
 
   if(!queryObject) return {
-	query: '',
-	values: []
+    query: '',
+    values: []
   };
 
   var self = this;
@@ -122,8 +122,8 @@ WhereBuilder.prototype.single = function single(queryObject, options) {
   // Ensure a sort is always set so that we get back consistent results
   if(!hop(queryObject, 'sort')) {
     var childPK;
-    _.keys(this.schema[this.currentTable].attributes).forEach(function(attr) {
-      var expandedAttr = self.schema[self.currentTable].attributes[attr];
+    _.keys(this.schema[this.currentTable].definition).forEach(function(attr) {
+      var expandedAttr = self.schema[self.currentTable].definition[attr];
       if(!hop(expandedAttr, 'primaryKey')) return;
       childPK = expandedAttr.columnName || attr;
     });
@@ -220,8 +220,8 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
       // Ensure a sort is always set so that we get back consistent results
       if(!hop(population.criteria, 'sort')) {
 
-        _.keys(self.schema[populationAlias].attributes).forEach(function(attr) {
-          var expandedAttr = self.schema[populationAlias].attributes[attr];
+        _.keys(self.schema[populationAlias].definition).forEach(function(attr) {
+          var expandedAttr = self.schema[populationAlias].definition[attr];
           if(!hop(expandedAttr, 'primaryKey')) return;
           childPK = expandedAttr.columnName || attr;
         });
@@ -233,7 +233,27 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
       // Read the queryObject and get back a query string and params
       parsedCriteria = criteriaParser.read(population.criteria);
 
-      queryString = '(SELECT * FROM ' + utils.escapeName(population.child, self.escapeCharacter, self.schemaName) + ' AS ' + utils.escapeName(populationAlias, self.escapeCharacter) + ' WHERE ' + utils.escapeName(population.childKey, self.escapeCharacter) + ' = ^?^ ';
+      queryString = '(SELECT ';
+      if(_.isArray(population.select) && population.select.length) {
+        var selectKeys = population.select.map(function(projection) {
+          return { table: population.child, key: projection };
+        });
+
+        _.each(selectKeys, function(projection) {
+          var projectionAlias = _.find(_.values(self.schema), {tableName: projection.table}).tableName;
+          queryString += utils.escapeName(projectionAlias, self.escapeCharacter) + '.' +
+          utils.escapeName(projection.key, self.escapeCharacter) + ',';
+        });
+        // remove trailing comma
+        population.select.length && (queryString.slice(-1) === ',') && (queryString = queryString.slice(0, -1));
+      }
+      else {
+        queryString += '*';
+      }
+
+      // Build the rest of the query string
+      queryString += ' FROM ' + utils.escapeName(population.child, self.escapeCharacter, self.schemaName) + ' AS ' + utils.escapeName(populationAlias, self.escapeCharacter) + ' WHERE ' + utils.escapeName(population.childKey, self.escapeCharacter) + ' = ^?^ ';
+
       if(parsedCriteria) {
 
         // If where criteria was used append an AND clause
@@ -292,12 +312,16 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
 
       // Look into the schema and build up attributes to select
       var selectKeys = [];
-
-      _.keys(self.schema[stage2ChildAlias].attributes).forEach(function(key) {
-        var schema = self.schema[stage2ChildAlias].attributes[key];
-        if(hop(schema, 'collection')) return;
-        selectKeys.push({ table: stage2.child, key: schema.columnName || key });
-      });
+      if(_.isArray(stage2.select) && stage2.select.length) {
+        var selectKeys = stage2.select.map(function(projection) {
+          return { table: stage2.child, key: projection };
+        });
+      } else {
+        _.each(self.schema[stage2ChildAlias].attributes, function(val, key) {
+          if(_.has(val, 'collection')) return;
+          selectKeys.push({ table: stage2.child, key: val.columnName || key });
+        });
+      }
 
       queryString += '(SELECT ';
       selectKeys.forEach(function(projection) {

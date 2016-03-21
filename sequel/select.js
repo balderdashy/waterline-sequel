@@ -86,6 +86,7 @@ SelectBuilder.prototype.buildSimpleSelect = function buildSimpleSelect(queryObje
     // after https://github.com/balderdashy/waterline/commit/687c869ad54f499018ab0b038d3de4435c96d1dd
     // but leaving here as a failsafe.
     var schema = self.schema[self.currentTable].definition[key] || {};
+    if(!schema) return;
     if(hop(schema, 'collection')) return;
     selectKeys.push({ table: self.currentTable, key: schema.columnName || key });
   });
@@ -109,6 +110,7 @@ SelectBuilder.prototype.buildSimpleSelect = function buildSimpleSelect(queryObje
     var attributes = population.select || _.keys(self.schema[childAlias].definition);
     _.each(attributes, function(key) {
       var schema = self.schema[childAlias].definition[key];
+      if(!schema) return;
       if(hop(schema, 'collection')) return;
       selectKeys.push({ table: population.alias ? '__' + population.alias : population.child, key: schema.columnName || key, alias: population.parentKey });
     });

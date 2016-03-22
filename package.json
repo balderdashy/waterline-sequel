@@ -21,7 +21,7 @@
     "sails-mysql": "balderdashy/sails-mysql",
     "sails-postgresql": "balderdashy/sails-postgresql",
     "should": "8.2.1",
-    "waterline-adapter-tests": "~0.10.17"
+    "waterline-adapter-tests": "~0.12.0"
   },
   "scripts": {
     "test": "make test",

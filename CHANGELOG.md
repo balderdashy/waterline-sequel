@@ -1,5 +1,9 @@
 # Waterline-Sequel Changelog
 
+### 0.6.1
+
+* [BUG] Fix an issue when populating the one side of a one-to-many association where virtual attributes were trying to be selected. See [#84](https://github.com/balderdashy/waterline-sequel/pull/84) for more details. Thanks [@Bazze](https://github.com/Bazze) for the issue submission.
+
 ### 0.6.0
 
 * [ENHANCEMENT] Add the ability to use projections in join queries. See [#80](https://github.com/balderdashy/waterline-sequel/pull/80) for more details.

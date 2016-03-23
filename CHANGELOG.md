@@ -1,5 +1,9 @@
 # Waterline-Sequel Changelog
 
+### 0.6.2
+
+* [BUG] Fix the second part of the issue from `0.6.0` this time by updating the complex queries. See [#85](https://github.com/balderdashy/waterline-sequel/pull/85) for more details. Thanks again to [@Bazze](https://github.com/Bazze), [@wulfsolter](https://github.com/wulfsolter) and others who helped debug this.
+
 ### 0.6.1
 
 * [BUG] Fix an issue when populating the one side of a one-to-many association where virtual attributes were trying to be selected. See [#84](https://github.com/balderdashy/waterline-sequel/pull/84) for more details. Thanks [@Bazze](https://github.com/Bazze) for the issue submission.

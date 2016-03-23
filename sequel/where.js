@@ -241,6 +241,24 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
 
         _.each(selectKeys, function(projection) {
           var projectionAlias = _.find(_.values(self.schema), {tableName: projection.table}).tableName;
+
+          // Find the projection in the schema and make sure it's a valid key
+          // that can be selected.
+          var schema = _.find(self.schema[projection.table]);
+          if(!schema) {
+            return;
+          }
+
+          var schemaVal = schema[projection.key];
+          if(!schemaVal) {
+            return;
+          }
+
+          // If this is a virtual attribute, it can't be selected
+          if(_.has(schemaVal, 'collection')) {
+            return;
+          }
+
           queryString += utils.escapeName(projectionAlias, self.escapeCharacter) + '.' +
           utils.escapeName(projection.key, self.escapeCharacter) + ',';
         });
@@ -326,6 +344,24 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
       queryString += '(SELECT ';
       selectKeys.forEach(function(projection) {
         var projectionAlias = _.find(_.values(self.schema), {tableName: projection.table}).tableName;
+
+        // Find the projection in the schema and make sure it's a valid key
+        // that can be selected.
+        var schema = _.find(self.schema[projection.table]);
+        if(!schema) {
+          return;
+        }
+
+        var schemaVal = schema[projection.key];
+        if(!schemaVal) {
+          return;
+        }
+
+        // If this is a virtual attribute, it can't be selected
+        if(_.has(schemaVal, 'collection')) {
+          return;
+        }
+
         queryString += utils.escapeName(projectionAlias, self.escapeCharacter) + '.' + utils.escapeName(projection.key, self.escapeCharacter) + ',';
       });
 

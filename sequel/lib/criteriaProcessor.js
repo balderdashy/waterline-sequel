@@ -830,6 +830,11 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
       }
 
       break;
+
+    default:
+      var err = new Error('Unknown filtering operator: "' + key + "\". Should be 'startsWith', '>', 'contains' or similar");
+      err.operator = key;
+      throw err;
   }
 
   // Bump paramCount

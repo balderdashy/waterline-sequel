@@ -82,6 +82,14 @@ describe('Sequel', function () {
     });
   });
 
+  describe('queries with an unknown operator', function () {
+    it('throws an error when the operator is unknown', function() {
+      var sequel = new Sequel(schema);
+      assert.throws(sequel.find.bind(sequel, 'bar', { id: { 'in': [ 1, 2 ] } }),
+        Error, "Unknown filtering operator: \"in\". Should be 'startsWith', '>', 'contains' or similar");
+    });
+  });
+
   describe('.find() with schema name', function () {
     var _options = _.extend({}, options, {schemaName: {'foo':'myschema','oddity':'anotherschema','bat':'public'}});
     // Loop through the query objects and test them against the `.find()` method.
@@ -99,5 +107,5 @@ describe('Sequel', function () {
         done();
       });
     });
-  });  
+  });
 });

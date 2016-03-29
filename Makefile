@@ -1,4 +1,9 @@
+.PHONY: test test-unit install test-integration
+
 ROOT=$(shell pwd)
+
+install:
+	npm install
 
 test: test-unit
 

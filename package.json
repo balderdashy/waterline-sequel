@@ -1,7 +1,7 @@
 {
   "name": "waterline-sequel",
   "description": "A helper library for generating SQL queries from the Waterline Query Language.",
-  "version": "0.5.5",
+  "version": "0.6.2",
   "author": "Cody Stoltman <particlebanana@gmail.com>",
   "url": "http://github.com/balderdashy/waterline-sequel",
   "keywords": [],
@@ -10,18 +10,18 @@
     "url": "git://github.com/balderdashy/waterline-sequel.git"
   },
   "dependencies": {
-    "lodash": "~3.10.0"
+    "lodash": "3.10.0"
   },
   "devDependencies": {
-    "async": "^0.9.0",
-    "chai": "^2.1.1",
-    "jpath": "^0.0.20",
-    "mocha": "^2.2.1",
-    "npm": "^2.7.4",
-    "sails-mysql": "git://github.com/balderdashy/sails-mysql",
-    "sails-postgresql": "git://github.com/balderdashy/sails-postgresql",
-    "should": "^5.2.0",
-    "waterline-adapter-tests": "^0.10.15"
+    "async": "1.5.2",
+    "chai": "3.5.0",
+    "jpath": "0.0.20",
+    "mocha": "2.4.5",
+    "npm": "2.7.4",
+    "sails-mysql": "balderdashy/sails-mysql",
+    "sails-postgresql": "balderdashy/sails-postgresql",
+    "should": "8.2.1",
+    "waterline-adapter-tests": "~0.12.0"
   },
   "scripts": {
     "test": "make test",

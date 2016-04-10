@@ -15,7 +15,7 @@ var hop = utils.object.hasOwnProperty;
 var SelectBuilder = module.exports = function(schema, currentTable, queryObject, options) {
 
   this.schema = schema;
-  this.currentSchema = schema[currentTable].attributes;
+  this.currentSchema = schema[currentTable].definition;
   this.currentTable = currentTable;
   this.escapeCharacter = '"';
   this.cast = false;
@@ -66,14 +66,27 @@ SelectBuilder.prototype.buildSimpleSelect = function buildSimpleSelect(queryObje
   var selectKeys = [];
   var query = 'SELECT ';
 
-  var attributes = queryObject.select || Object.keys(this.schema[this.currentTable].attributes);
+  // If there is a select projection, ensure that the primary key is added.
+  var pk;
+  _.each(this.schema[this.currentTable].definition, function(val, key) {
+    if(_.has(val, 'primaryKey') && val.primaryKey) {
+      pk = key;
+    }
+  });
+
+  if(queryObject.select && !_.includes(queryObject.select, pk)) {
+    queryObject.select.push(pk);
+  }
+
+  var attributes = queryObject.select || Object.keys(this.schema[this.currentTable].definition);
   delete queryObject.select;
 
   attributes.forEach(function(key) {
     // Default schema to {} in case a raw DB column name is sent.  This shouldn't happen
     // after https://github.com/balderdashy/waterline/commit/687c869ad54f499018ab0b038d3de4435c96d1dd
     // but leaving here as a failsafe.
-    var schema = self.schema[self.currentTable].attributes[key] || {};
+    var schema = self.schema[self.currentTable].definition[key] || {};
+    if(!schema) return;
     if(hop(schema, 'collection')) return;
     selectKeys.push({ table: self.currentTable, key: schema.columnName || key });
   });
@@ -89,10 +102,17 @@ SelectBuilder.prototype.buildSimpleSelect = function buildSimpleSelect(queryObje
     // Handle hasFK
     var childAlias = _.find(_.values(self.schema), {tableName: population.child}).tableName;
 
-    _.keys(self.schema[childAlias].attributes).forEach(function(key) {
-      var schema = self.schema[childAlias].attributes[key];
+    // Ensure the foreignKey is selected if a custom select was defined
+    if(population.select && !_.includes(population.select, population.childKey)) {
+      population.select.push(population.childKey);
+    }
+
+    var attributes = population.select || _.keys(self.schema[childAlias].definition);
+    _.each(attributes, function(key) {
+      var schema = self.schema[childAlias].definition[key];
+      if(!schema) return;
       if(hop(schema, 'collection')) return;
-      selectKeys.push({ table: population.alias ? "__"+population.alias : population.child, key: schema.columnName || key, alias: population.parentKey });
+      selectKeys.push({ table: population.alias ? '__' + population.alias : population.child, key: schema.columnName || key, alias: population.parentKey });
     });
   });
 

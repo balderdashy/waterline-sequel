@@ -85,7 +85,7 @@ SelectBuilder.prototype.buildSimpleSelect = function buildSimpleSelect(queryObje
     // Default schema to {} in case a raw DB column name is sent.  This shouldn't happen
     // after https://github.com/balderdashy/waterline/commit/687c869ad54f499018ab0b038d3de4435c96d1dd
     // but leaving here as a failsafe.
-    var schema = self.schema[self.currentTable].definition[key] || {};
+    var schema = self.schema[self.currentTable].attributes[key] || {};
     if(!schema) return;
     if(hop(schema, 'collection')) return;
     selectKeys.push({ table: self.currentTable, key: schema.columnName || key });

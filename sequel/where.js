@@ -244,12 +244,12 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
 
           // Find the projection in the schema and make sure it's a valid key
           // that can be selected.
-          var schema = _.find(self.schema[projection.table]);
-          if(!schema) {
+          var schema = self.schema[projection.table];
+          if(!schema || !schema.definition) {
             return;
           }
 
-          var schemaVal = schema[projection.key];
+          var schemaVal = schema.definition[projection.key];
           if(!schemaVal) {
             return;
           }
@@ -347,7 +347,7 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
 
         // Find the projection in the schema and make sure it's a valid key
         // that can be selected.
-        var schema = _.find(self.schema[projection.table]);
+        var schema = self.schema[projection.table];
         if(!schema) {
           return;
         }

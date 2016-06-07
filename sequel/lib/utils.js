@@ -47,7 +47,7 @@ utils.escapeName = function escapeName(name, escapeCharacter, schemaName) {
   var replacementString = '' + escapeCharacter + escapeCharacter;
   var replacementDot = '\.';
   if (schemaName && schemaName[name]) {
-    return utils.escapeName(schemaName[name], escapeCharacter) + '.' + 
+    return utils.escapeName(schemaName[name], escapeCharacter) + '.' +
     utils.escapeName(name, escapeCharacter);
   }
   return '' + escapeCharacter + name.replace(regex, replacementString).replace(/\./g, replacementDot) + escapeCharacter;
@@ -87,7 +87,7 @@ utils.mapAttributes = function(data, options) {
   // Determine if we should escape the inserted characters
   var escapeInserts = options && utils.object.hasOwnProperty(options, 'escapeInserts') ? options.escapeInserts : false;
 
-  Object.keys(data).forEach(function(key) {
+  _.each(_.keys(data), function(key) {
     var k = escapeInserts ? (options.escapeCharacter + key + options.escapeCharacter) : key;
     keys.push(k);
 
@@ -133,7 +133,7 @@ utils.prepareValue = function(value) {
   }
 
   // Store Arrays as strings
-  if (Array.isArray(value)) {
+  if (_.isArray(value)) {
     value = JSON.stringify(value);
   }
 

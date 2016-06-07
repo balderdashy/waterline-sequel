@@ -93,7 +93,7 @@ WhereBuilder.prototype.single = function single(queryObject, options) {
   var addSpace = false;
 
   // Add any hasFK strategy joins to the main query
-  _.keys(queryObject.instructions).forEach(function(attr) {
+  _.each(_.keys(queryObject.instructions), function(attr) {
 
     var strategy = queryObject.instructions[attr].strategy.strategy;
     var population = queryObject.instructions[attr].instructions[0];
@@ -122,7 +122,7 @@ WhereBuilder.prototype.single = function single(queryObject, options) {
   // Ensure a sort is always set so that we get back consistent results
   if(!hop(queryObject, 'sort')) {
     var childPK;
-    _.keys(this.schema[this.currentTable].definition).forEach(function(attr) {
+    _.each(_.keys(this.schema[this.currentTable].definition), function(attr) {
       var expandedAttr = self.schema[self.currentTable].definition[attr];
       if(!hop(expandedAttr, 'primaryKey')) return;
       childPK = expandedAttr.columnName || attr;
@@ -190,7 +190,7 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
   // Look up the child instructions and build out a template for each based on the type of join.
   if(!queryObject) return '';
 
-  _.keys(queryObject.instructions).forEach(function(attr) {
+  _.each(_.keys(queryObject.instructions), function(attr) {
 
     var queryString = '';
     var criteriaParser;
@@ -220,7 +220,7 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
       // Ensure a sort is always set so that we get back consistent results
       if(!hop(population.criteria, 'sort')) {
 
-        _.keys(self.schema[populationAlias].definition).forEach(function(attr) {
+        _.each(_.keys(self.schema[populationAlias].definition), function(attr) {
           var expandedAttr = self.schema[populationAlias].definition[attr];
           if(!hop(expandedAttr, 'primaryKey')) return;
           childPK = expandedAttr.columnName || attr;
@@ -315,7 +315,7 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
       // Ensure a sort is always set so that we get back consistent results
       if(!hop(stage2.criteria, 'sort')) {
 
-        _.keys(self.schema[stage2ChildAlias].attributes).forEach(function(attr) {
+        _.each(_.keys(self.schema[stage2ChildAlias].attributes), function(attr) {
           var expandedAttr = self.schema[stage2ChildAlias].attributes[attr];
           if(!hop(expandedAttr, 'primaryKey')) return;
           childPK = expandedAttr.columnName || attr;
@@ -342,7 +342,7 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
       }
 
       queryString += '(SELECT ';
-      selectKeys.forEach(function(projection) {
+      _.each(selectKeys, function(projection) {
         var projectionAlias = _.find(_.values(self.schema), {tableName: projection.table}).tableName;
 
         // Find the projection in the schema and make sure it's a valid key

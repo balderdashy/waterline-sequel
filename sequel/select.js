@@ -78,10 +78,10 @@ SelectBuilder.prototype.buildSimpleSelect = function buildSimpleSelect(queryObje
     queryObject.select.push(pk);
   }
 
-  var attributes = queryObject.select || Object.keys(this.schema[this.currentTable].definition);
+  var attributes = queryObject.select || _.keys(this.schema[this.currentTable].definition);
   delete queryObject.select;
 
-  attributes.forEach(function(key) {
+  _.each(attributes, function(key) {
     // Default schema to {} in case a raw DB column name is sent.  This shouldn't happen
     // after https://github.com/balderdashy/waterline/commit/687c869ad54f499018ab0b038d3de4435c96d1dd
     // but leaving here as a failsafe.
@@ -92,7 +92,7 @@ SelectBuilder.prototype.buildSimpleSelect = function buildSimpleSelect(queryObje
   });
 
   // Add any hasFK strategy joins to the main query
-  _.keys(queryObject.instructions).forEach(function(attr) {
+  _.each(_.keys(queryObject.instructions), function(attr) {
 
     var strategy = queryObject.instructions[attr].strategy.strategy;
     if(strategy !== 1) return;
@@ -117,7 +117,7 @@ SelectBuilder.prototype.buildSimpleSelect = function buildSimpleSelect(queryObje
   });
 
   // Add all the columns to be selected
-  selectKeys.forEach(function(select) {
+  _.each(selectKeys, function(select) {
     // If there is an alias, set it in the select (used for hasFK associations)
     if(select.alias) {
       query += utils.escapeName(select.table, self.escapeCharacter) + '.' + utils.escapeName(select.key, self.escapeCharacter) + ' AS ' + self.escapeCharacter + select.alias + '___' + select.key + self.escapeCharacter + ', ';
@@ -156,9 +156,9 @@ SelectBuilder.prototype.processAggregates = function processAggregates(criteria)
 
   // Append groupBy columns to select statement
   if(criteria.groupBy) {
-    if(!Array.isArray(criteria.groupBy)) criteria.groupBy = [criteria.groupBy];
+    if(!_.isArray(criteria.groupBy)) criteria.groupBy = [criteria.groupBy];
 
-    criteria.groupBy.forEach(function(key, index) {
+    _.each(criteria.groupBy, function(key, index) {
       // Check whether we are grouping by a column or an expression.
       if (_.includes(_.keys(self.currentSchema), key)) {
         query += tableName + '.' + utils.escapeName(key, self.escapeCharacter) + ', ';
@@ -171,8 +171,8 @@ SelectBuilder.prototype.processAggregates = function processAggregates(criteria)
   // Handle SUM
   if (criteria.sum) {
     var sum = '';
-    if(Array.isArray(criteria.sum)) {
-      criteria.sum.forEach(function(opt) {
+    if(_.isArray(criteria.sum)) {
+      _.each(criteria.sum, function(opt) {
         sum = 'SUM(' + tableName + '.' + utils.escapeName(opt, self.escapeCharacter) + ')';
         if(self.cast) {
           sum = 'CAST(' + sum + ' AS float)';
@@ -192,8 +192,8 @@ SelectBuilder.prototype.processAggregates = function processAggregates(criteria)
   // Handle AVG (casting to float to fix percision with trailing zeros)
   if (criteria.average) {
     var avg = '';
-    if(Array.isArray(criteria.average)) {
-      criteria.average.forEach(function(opt){
+    if(_.isArray(criteria.average)) {
+      _.each(criteria.average, function(opt){
         avg = 'AVG(' + tableName + '.' + utils.escapeName(opt, self.escapeCharacter) + ')';
         if(self.cast) {
           avg = 'CAST( ' + avg + ' AS float)';
@@ -212,8 +212,8 @@ SelectBuilder.prototype.processAggregates = function processAggregates(criteria)
   // Handle MAX
   if (criteria.max) {
     var max = '';
-    if(Array.isArray(criteria.max)) {
-      criteria.max.forEach(function(opt){
+    if(_.isArray(criteria.max)) {
+      _.each(criteria.max, function(opt){
         query += 'MAX(' + tableName + '.' + utils.escapeName(opt, self.escapeCharacter) + ') AS ' + opt + ', ';
       });
 
@@ -224,8 +224,8 @@ SelectBuilder.prototype.processAggregates = function processAggregates(criteria)
 
   // Handle MIN
   if (criteria.min) {
-    if(Array.isArray(criteria.min)) {
-      criteria.min.forEach(function(opt){
+    if(_.isArray(criteria.min)) {
+      _.each(criteria.min, function(opt){
         query += 'MIN(' + tableName + '.' + utils.escapeName(opt, self.escapeCharacter) + ') AS ' + opt + ', ';
       });
 

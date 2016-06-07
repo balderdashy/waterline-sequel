@@ -74,7 +74,7 @@ SelectBuilder.prototype.buildSimpleSelect = function buildSimpleSelect(queryObje
     }
   });
 
-  if(queryObject.select && !_.includes(queryObject.select, pk)) {
+  if(pk && queryObject.select && !_.includes(queryObject.select, pk)) {
     queryObject.select.push(pk);
   }
 

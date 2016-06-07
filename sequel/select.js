@@ -126,8 +126,15 @@ SelectBuilder.prototype.buildSimpleSelect = function buildSimpleSelect(queryObje
       query += utils.escapeName(select.table, self.escapeCharacter) + '.' + utils.escapeName(select.key, self.escapeCharacter) + ', ';
     }
   });
-  // Remove the last comma
-  query = query.slice(0, -2) + ' FROM ' + tableName + ' AS ' + utils.escapeName(self.currentTable, self.escapeCharacter) + ' ';
+
+  // Remove the last comma in a list of items being selected
+  if(selectKeys.length) {
+    query = query.slice(0, -2);
+  } else {
+    query += '*';
+  }
+
+  query = query + ' FROM ' + tableName + ' AS ' + utils.escapeName(self.currentTable, self.escapeCharacter) + ' ';
   return query;
 };
 

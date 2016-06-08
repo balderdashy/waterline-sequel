@@ -315,8 +315,8 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
       // Ensure a sort is always set so that we get back consistent results
       if(!hop(stage2.criteria, 'sort')) {
 
-        _.each(_.keys(self.schema[stage2ChildAlias].attributes), function(attr) {
-          var expandedAttr = self.schema[stage2ChildAlias].attributes[attr];
+        _.each(_.keys(self.schema[stage2ChildAlias].definition), function(attr) {
+          var expandedAttr = self.schema[stage2ChildAlias].definition[attr];
           if(!hop(expandedAttr, 'primaryKey')) return;
           childPK = expandedAttr.columnName || attr;
         });
@@ -335,7 +335,7 @@ WhereBuilder.prototype.complex = function complex(queryObject, options) {
           return { table: stage2.child, key: projection };
         });
       } else {
-        _.each(self.schema[stage2ChildAlias].attributes, function(val, key) {
+        _.each(self.schema[stage2ChildAlias].definition, function(val, key) {
           if(_.has(val, 'collection')) return;
           selectKeys.push({ table: stage2.child, key: val.columnName || key });
         });

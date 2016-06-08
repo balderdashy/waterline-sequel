@@ -1,5 +1,15 @@
 # Waterline-Sequel Changelog
 
+### 0.6.4
+
+* [ENHANCEMENT] Update any outdated dependencies that may have been causing warnings on install.
+
+* [BUG] Fixes issued where `[undefined]` was being used to select invalid custom primary keys in certain situations.
+
+* [BUG] Add a check to revert to `SELECT *` when the select array is empty to prevent the case where the query gets built with `SELEC`.
+
+* [BUG] Fix case where `attributes` was still being used instead of `definition`.
+
 ### 0.6.3
 
 * [ENHANCEMENT] Added newer versions of Node to the Travis test runner.

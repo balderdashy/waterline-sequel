@@ -20,8 +20,8 @@
     "npm": "2.15.6",
     "sails-mysql": "balderdashy/sails-mysql",
     "sails-postgresql": "balderdashy/sails-postgresql",
-    "waterline-adapter-tests": "~0.12.0"
     "should": "9.0.0",
+    "waterline-adapter-tests": "~0.12.1"
   },
   "scripts": {
     "test": "make test",

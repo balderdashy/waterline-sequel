@@ -18,8 +18,8 @@
     "jpath": "0.0.20",
     "mocha": "2.5.3",
     "npm": "2.15.6",
-    "sails-mysql": "balderdashy/sails-mysql",
-    "sails-postgresql": "balderdashy/sails-postgresql",
+    "sails-mysql": "^0.11.5",
+    "sails-postgresql": "^0.11.4",
     "should": "9.0.0",
     "waterline-adapter-tests": "~0.12.1"
   },

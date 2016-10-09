@@ -21,7 +21,7 @@
     "sails-mysql": "^0.11.5",
     "sails-postgresql": "^0.11.4",
     "should": "9.0.0",
-    "waterline-adapter-tests": "~0.12.1"
+    "waterline-adapter-tests": "^0.12.1"
   },
   "scripts": {
     "test": "make test",

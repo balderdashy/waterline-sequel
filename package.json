@@ -13,10 +13,10 @@
     "lodash": "3.10.1"
   },
   "devDependencies": {
-    "async": "1.5.2",
+    "async": "2.0.1",
     "chai": "3.5.0",
     "jpath": "0.0.20",
-    "mocha": "2.5.3",
+    "mocha": "3.0.2",
     "npm": "2.15.6",
     "sails-mysql": "^0.11.5",
     "sails-postgresql": "^0.11.4",

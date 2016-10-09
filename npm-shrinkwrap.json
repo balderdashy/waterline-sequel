@@ -1,0 +1,11 @@
+{
+  "name": "waterline-sequel",
+  "version": "0.6.4",
+  "dependencies": {
+    "lodash": {
+      "version": "3.10.1",
+      "from": "lodash@3.10.1",
+      "resolved": "https://registry.npmjs.org/lodash/-/lodash-3.10.1.tgz"
+    }
+  }
+}

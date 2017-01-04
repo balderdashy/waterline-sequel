@@ -177,5 +177,14 @@ utils.escapeString = function(value, forLike) {
  */
 
 utils.toSqlDate = function(date) {
-  return date.toUTCString();
+  var utc = new Date(
+    date.getUTCFullYear(),
+    date.getUTCMonth(),
+    date.getUTCDate(),
+    date.getUTCHours(),
+    date.getUTCMinutes(),
+    date.getUTCSeconds(),
+    date.getUTCMilliseconds()
+  );
+  return utc.toISOString();
 };

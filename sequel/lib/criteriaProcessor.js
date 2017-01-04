@@ -903,7 +903,7 @@ CriteriaProcessor.prototype.group = function(options) {
 
   _.each(options, function(key) {
     // Check whether we are grouping by a column or an expression.
-    if (_.includes(_.keys(self.currentSchema), key)) {
+    if (_.includes(_.keys(self.currentSchema), key) || _.includes(_.chain(self.currentSchema).map(_.values).flatten().value(), key) ) {
       self.queryString += utils.escapeName(self.currentTable, self.escapeCharacter, self.schemaName) + '.' + utils.escapeName(key, self.escapeCharacter) + ', ';
     } else {
       self.queryString += key + ', ';

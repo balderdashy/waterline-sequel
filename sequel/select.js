@@ -85,7 +85,7 @@ SelectBuilder.prototype.buildSimpleSelect = function buildSimpleSelect(queryObje
     // Default schema to {} in case a raw DB column name is sent.  This shouldn't happen
     // after https://github.com/balderdashy/waterline/commit/687c869ad54f499018ab0b038d3de4435c96d1dd
     // but leaving here as a failsafe.
-    var schema = self.schema[self.currentTable].definition[key] || {};
+    var schema = self.schema[self.currentTable].attributes[key] || {};
     if(!schema) return;
     if(hop(schema, 'collection')) return;
     selectKeys.push({ table: self.currentTable, key: schema.columnName || key });
@@ -167,7 +167,7 @@ SelectBuilder.prototype.processAggregates = function processAggregates(criteria)
 
     _.each(criteria.groupBy, function(key, index) {
       // Check whether we are grouping by a column or an expression.
-      if (_.includes(_.keys(self.currentSchema), key)) {
+      if (_.includes(_.keys(self.currentSchema), key) || _.includes(_.chain(self.currentSchema).map(_.values).flatten().value(), key) ) {
         query += tableName + '.' + utils.escapeName(key, self.escapeCharacter) + ', ';
       } else {
         query += key + ' as group' + index + ', ';

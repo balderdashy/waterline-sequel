@@ -152,12 +152,6 @@ SelectBuilder.prototype.processAggregates = function processAggregates(criteria)
     return false;
   }
 
-  // Error if groupBy is used and no calculations are given
-  if(!criteria.sum && !criteria.average && !criteria.min && !criteria.max) {
-    throw new Error('An aggregation was used but no calculations were given');
-  }
-
-
   var query = 'SELECT ';
   var tableName = utils.escapeName(this.currentTable, this.escapeCharacter);
 

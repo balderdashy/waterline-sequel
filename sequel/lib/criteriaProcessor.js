@@ -758,6 +758,31 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
       }
 
       break;
+      
+    case 'not like':
+
+      if(this.caseSensitive) {
+        comparator = 'INOT LIKE';
+      }
+      else {
+        comparator = 'NOT LIKE';
+      }
+
+      // Override comparator with WL Next features
+      if(hop(self.wlNext, 'caseSensitive') && self.wlNext.caseSensitive) {
+        comparator = 'NOT LIKE';
+      }
+
+      if(this.parameterized) {
+        this.values.push(value);
+        str = comparator + ' ' + '$' + this.paramCount;
+      }
+      else {
+        // Note that wildcards are not escaped out of NOT like criterion intentionally
+        str = comparator + ' "' + utils.escapeString(value) + '"';
+      }
+
+      break;
 
     case 'contains':
 

@@ -228,7 +228,8 @@ CriteriaProcessor.prototype.like = function like(val) {
     var comparator = self.caseSensitive ? 'ILIKE' : 'LIKE';
 
     // Override comparator with WL Next features
-    if(isWLNextForceLike(self.wlNext)) {
+    if(
+      (self.wlNext)) {
       comparator = 'LIKE';
     }
 
@@ -574,7 +575,7 @@ CriteriaProcessor.prototype.process = function process(parent, value, combinator
   }
 
   // Add support for overriding case sensitivity with WL Next features
-  if(hop(isWLNextForceLike(this.wlNext)) {
+  if(hop(isWLNextForceLike(this.wlNext))) {
     caseSensitive = true;
   }
 

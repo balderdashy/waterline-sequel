@@ -574,7 +574,7 @@ CriteriaProcessor.prototype.process = function process(parent, value, combinator
   }
 
   // Add support for overriding case sensitivity with WL Next features
-  if(hop(isWLNextForceLike(this.wlNext))) {
+  if(isWLNextForceLike(this.wlNext)) {
     caseSensitive = true;
   }
 

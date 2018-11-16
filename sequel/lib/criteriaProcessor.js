@@ -43,7 +43,8 @@ var CriteriaProcessor = module.exports = function CriteriaProcessor(currentTable
   this.paramCount = 1;
   this.parameterized = true;
   this.caseSensitive = true;
-  this.escapeCharacter = '"';
+  this.identifierCharacter = '`';
+  this.escapeCharacter = '\'';
   this.wlNext = {};
 
   if(options && utils.object.hasOwnProperty(options, 'parameterized')) {
@@ -54,8 +55,8 @@ var CriteriaProcessor = module.exports = function CriteriaProcessor(currentTable
     this.caseSensitive = options.caseSensitive;
   }
 
-  if(options && utils.object.hasOwnProperty(options, 'escapeCharacter')) {
-    this.escapeCharacter = options.escapeCharacter;
+  if(options && utils.object.hasOwnProperty(options, 'identifierCharacter')) {
+    this.identifierCharacter = options.identifierCharacter;
   }
 
   if(options && utils.object.hasOwnProperty(options, 'paramCount')) {
@@ -325,13 +326,13 @@ CriteriaProcessor.prototype._in = function _in(key, val) {
   // Check case sensitivity to decide if LOWER logic is used
   if(!caseSensitivity) {
     if(lower) {
-      key = 'LOWER(' + utils.escapeName(self.getTableAlias(), self.escapeCharacter, self.schemaName) + '.' + utils.escapeName(key, self.escapeCharacter) + ')';
+      key = 'LOWER(' + utils.escapeName(self.getTableAlias(), self.identifierCharacter, self.schemaName) + '.' + utils.escapeName(key, self.identifierCharacter) + ')';
     } else {
-      key = utils.escapeName(self.getTableAlias(), self.escapeCharacter, self.schemaName) + '.' + utils.escapeName(key, self.escapeCharacter);
+      key = utils.escapeName(self.getTableAlias(), self.identifierCharacter, self.schemaName) + '.' + utils.escapeName(key, self.identifierCharacter);
     }
     self.queryString += key + ' IN (';
   } else {
-    self.queryString += utils.escapeName(self.getTableAlias(), self.escapeCharacter, self.schemaName) + '.' + utils.escapeName(key, self.escapeCharacter) + ' IN (';
+    self.queryString += utils.escapeName(self.getTableAlias(), self.identifierCharacter, self.schemaName) + '.' + utils.escapeName(key, self.identifierCharacter) + ' IN (';
   }
 
   // Append each value to query
@@ -349,7 +350,7 @@ CriteriaProcessor.prototype._in = function _in(key, val) {
     }
     else {
       if(_.isString(value)) {
-        value = '"' + utils.escapeString(value) + '"';
+        value = utils.wrapValue(utils.escapeString(value), self.escapeCharacter);
       }
 
       self.queryString += value + ',';
@@ -377,7 +378,7 @@ CriteriaProcessor.prototype.buildParam = function buildParam (tableName, propert
   var escape = utils.escapeName,
       param;
 
-  param = escape(tableName, this.escapeCharacter, this.schemaName) + '.' + escape(property, this.escapeCharacter);
+  param = escape(tableName, this.identifierCharacter, this.schemaName) + '.' + escape(property, this.identifierCharacter);
 
   if (caseSensitive) {
     param = 'LOWER(' + param + ')';
@@ -483,7 +484,7 @@ CriteriaProcessor.prototype.processSimple = function processSimple (tableName, p
   }
 
   if (_.isString(value)) {
-    value = '"' + utils.escapeString(value) +'"';
+    value = utils.wrapValue(utils.escapeString(value), self.escapeCharacter);
   }
 
   this.queryString += parent + ' ' + combinator + ' ' + value;
@@ -511,7 +512,7 @@ CriteriaProcessor.prototype.processObject = function processObject (tableName, p
   // Expand criteria object
   function expandCriteria (obj) {
     var child = self.findChild(parent),
-        sensitiveTypes = ['text', 'string'], // haha, "sensitive types". "I'll watch 'the notebook' with you, babe."
+        sensitiveTypes = ['text', 'string'], // haha, 'sensitive types'. 'I'll watch \'the notebook\' with you, babe.'
         lower;
 
     _.keys(obj).forEach(function(key) {
@@ -606,7 +607,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
       ('00' + value.getMinutes()).slice(-2) + ':' +
       ('00' + value.getSeconds()).slice(-2);
 
-    value = '"' + value + '"';
+    value = utils.wrapValue(value, self.escapeCharacter);
     escapedDate = true;
   }
 
@@ -621,7 +622,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
       }
       else {
         if(_.isString(value) && !escapedDate) {
-          value = '"' + utils.escapeString(value) + '"';
+          value = utils.wrapValue(utils.escapeString(value), self.escapeCharacter);
         }
         str = '< ' + value;
       }
@@ -637,7 +638,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
       }
       else {
         if(_.isString(value) && !escapedDate) {
-          value = '"' + utils.escapeString(value) + '"';
+          value = utils.wrapValue(utils.escapeString(value), self.escapeCharacter);
         }
         str = '<= ' + value;
       }
@@ -653,7 +654,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
       }
       else {
         if(_.isString(value) && !escapedDate) {
-          value = '"' + utils.escapeString(value) + '"';
+          value = utils.wrapValue(utils.escapeString(value), self.escapeCharacter);
         }
         str = '> ' + value;
       }
@@ -669,7 +670,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
       }
       else {
         if(_.isString(value) && !escapedDate) {
-          value = '"' + utils.escapeString(value) + '"';
+          value = utils.wrapValue(utils.escapeString(value), self.escapeCharacter);;
         }
         str = '>= ' + value;
       }
@@ -706,7 +707,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
             value.forEach(function(val) {
 
               if(_.isString(val)) {
-                val = '"' + utils.escapeString(val) + '"';
+                val = utils.wrapValue(utils.escapeString(val), self.escapeCharacter);
               }
 
               str += val + ',';
@@ -724,7 +725,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
           }
           else {
             if(_.isString(value)) {
-              value = '"' + utils.escapeString(value) + '"';
+              value = utils.wrapValue(utils.escapeString(value), self.escapeCharacter);;
             }
 
             str = '<> ' + value;
@@ -754,7 +755,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
       }
       else {
         // Note that wildcards are not escaped out of like criterion intentionally
-        str = comparator + ' "' + utils.escapeString(value) + '"';
+        str = comparator + ' ' + utils.wrapValue(utils.escapeString(value), self.escapeCharacter);
       }
 
       break;
@@ -778,7 +779,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
         str = comparator + ' ' + '$' + this.paramCount;
       }
       else {
-        str = comparator + ' "%' + utils.escapeString(value, true) + '%"';
+        str = comparator + ' ' + utils.wrapValue('%' + utils.escapeString(value, true) + '%', self.escapeCharacter);
       }
 
       break;
@@ -802,7 +803,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
         str = comparator + ' ' + '$' + this.paramCount;
       }
       else {
-        str = comparator + ' "' + utils.escapeString(value, true) + '%"';
+        str = comparator + ' ' + utils.wrapValue(utils.escapeString(value, true) + '%', self.escapeCharacter);
       }
 
       break;
@@ -826,10 +827,15 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
         str = comparator + ' ' + '$' + this.paramCount;
       }
       else {
-        str = comparator + ' "%' + utils.escapeString(value, true) + '"';
+        str = comparator + ' ' + utils.wrapValue('%' + utils.escapeString(value, true), self.escapeCharacter);
       }
 
       break;
+
+    default:
+      var err = new Error('Unknown filtering operator: \'' + key + '\'. Should be \'startsWith\', \'>\', \'contains\' or similar');
+      err.operator = key;
+      throw err;
   }
 
   // Bump paramCount
@@ -877,7 +883,7 @@ CriteriaProcessor.prototype.sort = function(options) {
 
   keys.forEach(function(key) {
     var direction = options[key] === 1 ? 'ASC' : 'DESC';
-    self.queryString += utils.escapeName(self.currentTable, self.escapeCharacter, self.schemaName) + '.' + utils.escapeName(key, self.escapeCharacter) + ' ' + direction + ', ';
+    self.queryString += utils.escapeName(self.currentTable, self.identifierCharacter, self.schemaName) + '.' + utils.escapeName(key, self.identifierCharacter) + ' ' + direction + ', ';
   });
 
   // Remove trailing comma
@@ -899,7 +905,7 @@ CriteriaProcessor.prototype.group = function(options) {
   options.forEach(function(key) {
     // Check whether we are grouping by a column or an expression.
     if (_.includes(_.keys(self.currentSchema), key)) {
-      self.queryString += utils.escapeName(self.currentTable, self.escapeCharacter, self.schemaName) + '.' + utils.escapeName(key, self.escapeCharacter) + ', ';
+      self.queryString += utils.escapeName(self.currentTable, self.identifierCharacter, self.schemaName) + '.' + utils.escapeName(key, self.identifierCharacter) + ', ';
     } else {
       self.queryString += key + ', ';
     }

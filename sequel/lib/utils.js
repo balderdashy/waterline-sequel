@@ -42,15 +42,26 @@ utils.object.hasOwnProperty = function(obj, prop) {
  * peek at https://dev.mysql.com/doc/refman/5.7/en/identifiers.html .
  */
 
-utils.escapeName = function escapeName(name, escapeCharacter, schemaName) {
-  var regex = new RegExp(escapeCharacter, 'g');
-  var replacementString = '' + escapeCharacter + escapeCharacter;
+utils.escapeName = function escapeName(name, identifierCharacter, schemaName) {
+  var regex = new RegExp(identifierCharacter, 'g');
+  var replacementString = '' + identifierCharacter + identifierCharacter;
   var replacementDot = '\.';
   if (schemaName && schemaName[name]) {
-    return utils.escapeName(schemaName[name], escapeCharacter) + '.' + 
-    utils.escapeName(name, escapeCharacter);
+    return utils.escapeName(schemaName[name], identifierCharacter) + '.' +
+    utils.escapeName(name, identifierCharacter);
   }
-  return '' + escapeCharacter + name.replace(regex, replacementString).replace(/\./g, replacementDot) + escapeCharacter;
+  return '' + identifierCharacter + name.replace(regex, replacementString).replace(/\./g, replacementDot) + identifierCharacter;
+};
+
+/**
+* Return wrapped string value with escapeCharacter
+*
+* @param {String} value
+* @param {String} escapeCharacter
+* @return {String}
+*/
+utils.wrapValue = function wrapValue(value, escapeCharacter) {
+  return escapeCharacter + value + escapeCharacter;
 };
 
 /**
@@ -82,13 +93,13 @@ utils.mapAttributes = function(data, options) {
   var parameterized = options && utils.object.hasOwnProperty(options, 'parameterized') ? options.parameterized : true;
 
   // Get the escape character
-  var escapeCharacter = options && utils.object.hasOwnProperty(options, 'escapeCharacter') ? options.escapeCharacter : '"';
+  var identifierCharacter = options && utils.object.hasOwnProperty(options, 'identifierCharacter') ? options.identifierCharacter : '`';
 
   // Determine if we should escape the inserted characters
   var escapeInserts = options && utils.object.hasOwnProperty(options, 'escapeInserts') ? options.escapeInserts : false;
 
   Object.keys(data).forEach(function(key) {
-    var k = escapeInserts ? (options.escapeCharacter + key + options.escapeCharacter) : key;
+    var k = escapeInserts ? (options.identifierCharacter + key + options.identifierCharacter) : key;
     keys.push(k);
 
     var value = utils.prepareValue(data[key]);
@@ -154,15 +165,15 @@ utils.escapeString = function(value, forLike) {
 
   value = value.replace(/[_%\0\n\r\b\t\\\'\"\x1a]/g, function(s) {
     switch(s) {
-      case "\0": return "\\0";
-      case "\n": return "\\n";
-      case "\r": return "\\r";
-      case "\b": return "\\b";
-      case "\t": return "\\t";
-      case "\x1a": return "\\Z";
-      case "%": return forLike ? "\\%" : "%";
-      case "_": return forLike ? "\\_" : "_";
-      default: return "\\"+s;
+      case '\0': return '\\0';
+      case '\n': return '\\n';
+      case '\r': return '\\r';
+      case '\b': return '\\b';
+      case '\t': return '\\t';
+      case '\x1a': return '\\Z';
+      case '%': return forLike ? '\\%' : '%';
+      case '_': return forLike ? '\\_' : '_';
+      default: return '\\'+s;
     }
   });
 

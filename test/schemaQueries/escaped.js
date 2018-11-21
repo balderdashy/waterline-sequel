@@ -28,7 +28,7 @@ module.exports = [
       find: {
 
         // The queryString we expect to be rendered after calling Sequel.find()
-        queryString: 'SELECT `foo`.`color`, `foo`.`id`, `foo`.`createdAt`, `foo`.`updatedAt`, `foo`.`bar`, `foo`.`bat`, `foo`.`baz` FROM `myschema`.`foo` AS `foo`  WHERE LOWER(`foo`.`color`) LIKE "\\\\\\\\\\\\\\" or 1=1; -- \\%\\_%"  ',
+        queryString: 'SELECT `foo`.`color`, `foo`.`id`, `foo`.`createdAt`, `foo`.`updatedAt`, `foo`.`bar`, `foo`.`bat`, `foo`.`baz` FROM `myschema`.`foo` AS `foo`  WHERE LOWER(`foo`.`color`) LIKE \'\\\\\\\\\\\\\\" or 1=1; -- \\%\\_%\'  ',
 
         // The number of queries that will be returned after calling Sequel.find()
         queriesReturned: 1
@@ -64,7 +64,7 @@ module.exports = [
       find: {
 
         // The queryString we expect to be rendered after calling Sequel.find()
-        queryString: 'SELECT `foo`.`color`, `foo`.`id`, `foo`.`createdAt`, `foo`.`updatedAt`, `foo`.`bar`, `foo`.`bat`, `foo`.`baz` FROM `myschema`.`foo` AS `foo`  WHERE LOWER(`foo`.`color`) LIKE "%\\\\\\\\\\\\\\" or 1=1; -- \\%\\_"  ',
+        queryString: 'SELECT `foo`.`color`, `foo`.`id`, `foo`.`createdAt`, `foo`.`updatedAt`, `foo`.`bar`, `foo`.`bat`, `foo`.`baz` FROM `myschema`.`foo` AS `foo`  WHERE LOWER(`foo`.`color`) LIKE \'%\\\\\\\\\\\\\\" or 1=1; -- \\%\\_\'  ',
 
         // The number of queries that will be returned after calling Sequel.find()
         queriesReturned: 1
@@ -100,7 +100,7 @@ module.exports = [
       find: {
 
         // The queryString we expect to be rendered after calling Sequel.find()
-        queryString: 'SELECT `foo`.`color`, `foo`.`id`, `foo`.`createdAt`, `foo`.`updatedAt`, `foo`.`bar`, `foo`.`bat`, `foo`.`baz` FROM `myschema`.`foo` AS `foo`  WHERE LOWER(`foo`.`color`) LIKE "%\\\\\\\\\\\\\\" or 1=1; -- \\%\\_%"  ',
+        queryString: 'SELECT `foo`.`color`, `foo`.`id`, `foo`.`createdAt`, `foo`.`updatedAt`, `foo`.`bar`, `foo`.`bat`, `foo`.`baz` FROM `myschema`.`foo` AS `foo`  WHERE LOWER(`foo`.`color`) LIKE \'%\\\\\\\\\\\\\\" or 1=1; -- \\%\\_%\'  ',
 
         // The number of queries that will be returned after calling Sequel.find()
         queriesReturned: 1
@@ -138,7 +138,7 @@ module.exports = [
       find: {
 
         // The queryString we expect to be rendered after calling Sequel.find()
-        queryString: 'SELECT `foo`.`color`, `foo`.`id`, `foo`.`createdAt`, `foo`.`updatedAt`, `foo`.`bar`, `foo`.`bat`, `foo`.`baz` FROM `myschema`.`foo` AS `foo`  WHERE LOWER(`foo`.`color`) LIKE "\\\\\\\\\\\\\\" or 1=1; -- %_"  ',
+        queryString: 'SELECT `foo`.`color`, `foo`.`id`, `foo`.`createdAt`, `foo`.`updatedAt`, `foo`.`bar`, `foo`.`bat`, `foo`.`baz` FROM `myschema`.`foo` AS `foo`  WHERE LOWER(`foo`.`color`) LIKE \'\\\\\\\\\\\\\\" or 1=1; -- %_\'  ',
 
         // The number of queries that will be returned after calling Sequel.find()
         queriesReturned: 1

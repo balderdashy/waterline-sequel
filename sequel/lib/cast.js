@@ -1,7 +1,7 @@
 /**
  * Cast special values to proper types.
  *
- * Ex: Array is stored as "[0,1,2,3]" and should be cast to proper
+ * Ex: Array is stored as '[0,1,2,3]' and should be cast to proper
  * array for return values.
  */
 
@@ -27,7 +27,7 @@ Query.prototype.cast = function(values) {
 
 Query.prototype.castValue = function(key, value, attributes, schema, joinKey) {
 
-  // Check if key is a special "join" key, identified with a '__' split
+  // Check if key is a special 'join' key, identified with a '__' split
   var attr = key.split('__');
   if(attr.length === 2) {
 
@@ -38,7 +38,7 @@ Query.prototype.castValue = function(key, value, attributes, schema, joinKey) {
     }
   }
 
-  // Lookup Schema "Type"
+  // Lookup Schema 'Type'
   if(!schema[key]) return;
   var type = schema[key].type;
   if(!type) return;

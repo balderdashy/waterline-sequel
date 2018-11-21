@@ -86,7 +86,7 @@ describe('Sequel', function () {
     it('throws an error when the operator is unknown', function() {
       var sequel = new Sequel(schema);
       assert.throws(sequel.find.bind(sequel, 'bar', { id: { 'in': [ 1, 2 ] } }),
-        Error, "Unknown filtering operator: \"in\". Should be 'startsWith', '>', 'contains' or similar");
+        Error, 'Unknown filtering operator: \'in\'. Should be \'startsWith\', \'>\', \'contains\' or similar');
     });
   });
 

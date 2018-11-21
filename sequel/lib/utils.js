@@ -98,7 +98,7 @@ utils.mapAttributes = function(data, options) {
   // Determine if we should escape the inserted characters
   var escapeInserts = options && utils.object.hasOwnProperty(options, 'escapeInserts') ? options.escapeInserts : false;
 
-  Object.keys(data).forEach(function(key) {
+  _.each(_.keys(data), function(key) {
     var k = escapeInserts ? (options.identifierCharacter + key + options.identifierCharacter) : key;
     keys.push(k);
 
@@ -144,7 +144,7 @@ utils.prepareValue = function(value) {
   }
 
   // Store Arrays as strings
-  if (Array.isArray(value)) {
+  if (_.isArray(value)) {
     value = JSON.stringify(value);
   }
 

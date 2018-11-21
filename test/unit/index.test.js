@@ -107,5 +107,5 @@ describe('Sequel', function () {
         done();
       });
     });
-  });  
+  });
 });

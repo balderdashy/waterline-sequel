@@ -36,7 +36,7 @@ var CriteriaProcessor = module.exports = function CriteriaProcessor(currentTable
 
   this.currentTable = currentTable;
   this.schema = schema;
-  this.currentSchema = schema[currentTable].attributes;
+  this.currentSchema = schema[currentTable].definition;
   this.tableScope = null;
   this.queryString = '';
   this.values = [];
@@ -101,7 +101,7 @@ CriteriaProcessor.prototype.read = function read(options) {
   delete _options.groupBy;
 
   if(_options.where !== null) {
-    _.keys(_options).forEach(function(key) {
+    _.each(_.keys(_options), function(key) {
       self.expand(key, _options[key]);
     });
   }
@@ -175,18 +175,18 @@ CriteriaProcessor.prototype.or = function or(val) {
 
   var self = this;
 
-  if(!Array.isArray(val)) {
+  if(!_.isArray(val)) {
     throw new Error('`or` statements must be in an array.');
   }
 
   // Wrap the entire OR clause
   this.queryString += '(';
 
-  val.forEach(function(statement) {
+  _.each(val, function(statement) {
     self.queryString += '(';
 
     // Recursively call expand. Assumes no nesting of `or` statements
-    _.keys(statement).forEach(function(key) {
+    _.each(_.keys(statement), function(key) {
       self.expand(key, statement[key]);
     });
 
@@ -237,7 +237,7 @@ CriteriaProcessor.prototype.like = function like(val) {
     self.queryString += ' AND ';
   };
 
-  _.keys(val).forEach(function(parent) {
+  _.each(_.keys(val), function(parent) {
     expandBlock(parent);
   });
 
@@ -336,7 +336,7 @@ CriteriaProcessor.prototype._in = function _in(key, val) {
   }
 
   // Append each value to query
-  val.forEach(function(value) {
+  _.each(val, function(value) {
 
     // If case sensitivity if off lowercase the value
     if(!caseSensitivity && _.isString(value)) {
@@ -429,7 +429,7 @@ CriteriaProcessor.prototype.findChild = function findChild (child) {
 CriteriaProcessor.prototype.processSimple = function processSimple (tableName, parent, value, combinator, sensitive) {
   // Set lower logic to true
   var sensitiveTypes = ['text', 'string'],
-      currentSchema = this.schema[tableName].attributes,
+      currentSchema = this.schema[tableName].definition,
       self = this,
       parentType,
       lower;
@@ -500,7 +500,7 @@ CriteriaProcessor.prototype.processSimple = function processSimple (tableName, p
  * @param {string}  [alias]
  */
 CriteriaProcessor.prototype.processObject = function processObject (tableName, parent, value, combinator, sensitive) {
-  var currentSchema = this.schema[tableName].attributes,
+  var currentSchema = this.schema[tableName].definition,
       self = this,
       parentType;
 
@@ -515,7 +515,7 @@ CriteriaProcessor.prototype.processObject = function processObject (tableName, p
         sensitiveTypes = ['text', 'string'], // haha, 'sensitive types'. 'I'll watch \'the notebook\' with you, babe.'
         lower;
 
-    _.keys(obj).forEach(function(key) {
+    _.each(_.keys(obj), function(key) {
       if (child && !self.isOperator(key)) {
         self.tableScope = child;
         self.expand(key, obj[key]);
@@ -685,7 +685,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
       }
       else {
         // For array values, do a "NOT IN"
-        if (Array.isArray(value)) {
+        if (_.isArray(value)) {
 
           if(self.parameterized) {
             var params = [];
@@ -693,7 +693,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
             this.values = this.values.concat(value);
             str = 'NOT IN (';
 
-            value.forEach(function() {
+            _.each(value, function() {
               params.push('$' + self.paramCount++);
             });
 
@@ -704,7 +704,7 @@ CriteriaProcessor.prototype.prepareCriterion = function prepareCriterion(key, va
           }
           else {
             str = 'NOT IN (';
-            value.forEach(function(val) {
+            _.each(value, function(val) {
 
               if(_.isString(val)) {
                 val = utils.wrapValue(utils.escapeString(val), self.escapeCharacter);
@@ -875,13 +875,13 @@ CriteriaProcessor.prototype.skip = function(options) {
  */
 
 CriteriaProcessor.prototype.sort = function(options) {
-  var keys = Object.keys(options);
+  var keys = _.keys(options);
   if (!keys.length) { return; }
 
   var self = this;
   this.queryString += ' ORDER BY ';
 
-  keys.forEach(function(key) {
+  _.each(keys, function(key) {
     var direction = options[key] === 1 ? 'ASC' : 'DESC';
     self.queryString += utils.escapeName(self.currentTable, self.identifierCharacter, self.schemaName) + '.' + utils.escapeName(key, self.identifierCharacter) + ' ' + direction + ', ';
   });
@@ -900,9 +900,9 @@ CriteriaProcessor.prototype.group = function(options) {
   this.queryString += ' GROUP BY ';
 
   // Normalize to array
-  if(!Array.isArray(options)) options = [options];
+  if(!_.isArray(options)) options = [options];
 
-  options.forEach(function(key) {
+  _.each(options, function(key) {
     // Check whether we are grouping by a column or an expression.
     if (_.includes(_.keys(self.currentSchema), key)) {
       self.queryString += utils.escapeName(self.currentTable, self.identifierCharacter, self.schemaName) + '.' + utils.escapeName(key, self.identifierCharacter) + ', ';
